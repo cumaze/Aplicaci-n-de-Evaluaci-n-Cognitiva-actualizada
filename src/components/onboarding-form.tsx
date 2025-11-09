@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { Question, UserData } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { simulateAPI } from '@/lib/simulated-data';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'El nombre debe tener al menos 2 caracteres.' }),
@@ -23,9 +24,10 @@ const formSchema = z.object({
 
 type OnboardingFormProps = {
   onStartAssessment: (userData: UserData, questions: Question[]) => void;
+  evaluationMode: 'simulated' | 'real';
 };
 
-export default function OnboardingForm({ onStartAssessment }: OnboardingFormProps) {
+export default function OnboardingForm({ onStartAssessment, evaluationMode }: OnboardingFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -39,30 +41,59 @@ export default function OnboardingForm({ onStartAssessment }: OnboardingFormProp
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    const result = await fetch('/api/start-assessment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ career: values.career, level: values.level }),
-    }).then(r => r.json());
-    setLoading(false);
 
-    if (result.success && result.questions) {
+    try {
+      let questions: Question[];
+      
+      if (evaluationMode === 'simulated') {
+        // Usar datos simulados
+        questions = await simulateAPI.generateQuestions(values);
+      } else {
+        // Usar API real (tu código actual)
+        const result = await fetch('/api/start-assessment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ career: values.career, level: values.level }),
+        }).then(r => r.json());
+
+        if (result.success && result.questions) {
+          questions = result.questions;
+        } else {
+          throw new Error(result.error || 'Error al generar las preguntas');
+        }
+      }
+
       const selectedCareer = CAREERS.find(c => c.key === values.career);
-      onStartAssessment({ ...values, area: selectedCareer?.area || '' }, result.questions);
-    } else {
+      onStartAssessment({ 
+        ...values, 
+        area: selectedCareer?.area || '',
+        timestamp: new Date().toISOString()
+      }, questions);
+
+    } catch (error) {
+      console.error('Error starting assessment:', error);
       toast({
         variant: 'destructive',
         title: 'Error al iniciar la evaluación',
-        description: result.error || 'Ocurrió un error al generar las preguntas. Por favor, intenta de nuevo.',
+        description: error instanceof Error ? error.message : 'Ocurrió un error al generar las preguntas. Por favor, intenta de nuevo.',
       });
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <>
       <CardHeader>
-        <CardTitle className="font-headline">Bienvenido/a</CardTitle>
-        <CardDescription>Completa tus datos para comenzar la evaluación de competencias.</CardDescription>
+        <CardTitle className="font-headline">
+          Bienvenido/a {evaluationMode === 'simulated' ? '(Modo Demo)' : ''}
+        </CardTitle>
+        <CardDescription>
+          {evaluationMode === 'simulated' 
+            ? 'Usando datos de ejemplo para demostración' 
+            : 'Completa tus datos para comenzar la evaluación de competencias.'
+          }
+        </CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -144,11 +175,21 @@ export default function OnboardingForm({ onStartAssessment }: OnboardingFormProp
               )}
             />
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={loading} className="w-full sm:w-auto ml-auto bg-accent text-accent-foreground hover:bg-accent/90">
+          <CardFooter className="flex flex-col space-y-4">
+            <Button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full sm:w-auto ml-auto bg-accent text-accent-foreground hover:bg-accent/90"
+            >
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Comenzar Evaluación
+              {evaluationMode === 'simulated' ? 'Comenzar Demo' : 'Comenzar Evaluación'}
             </Button>
+            <div className="text-center text-sm text-muted-foreground w-full">
+              {evaluationMode === 'simulated' 
+                ? '✅ Modo Demo: Usando datos de ejemplo' 
+                : '🤖 Modo Real: Conectado a IA'
+              }
+            </div>
           </CardFooter>
         </form>
       </Form>

@@ -39,21 +39,47 @@ export default function Assessment({ questions, userData, onFinishAssessment }: 
 
   const handleFinish = async (finalAnswers: Answers) => {
     setLoading(true);
-    const result = await fetch('/api/generate-report', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userData, answers: finalAnswers }),
-    }).then(r => r.json());
-    setLoading(false);
+    
+    try {
+      // Determinar el modo basado en si hay API key guardada
+      const savedApiKey = localStorage.getItem('deepseekApiKey');
+      const mode = savedApiKey ? 'real' : 'simulated';
+      
+      const response = await fetch('/api/generate-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userData, 
+          answers: finalAnswers,
+          mode,                    // ← NUEVO: agregar modo
+          apiKey: savedApiKey      // ← NUEVO: agregar API key (solo en modo real)
+        }),
+      });
 
-    if (result.success && result.summary && result.grades) {
-      onFinishAssessment(finalAnswers, result.summary, result.grades);
-    } else {
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.summary && result.grades) {
+        onFinishAssessment(finalAnswers, result.summary, result.grades);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error al generar el informe',
+          description: result.error || 'Ocurrió un error. Por favor, intenta de nuevo.',
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
       toast({
         variant: 'destructive',
-        title: 'Error al generar el informe',
-        description: result.error || 'Ocurrió un error. Por favor, intenta de nuevo.',
+        title: 'Error de conexión',
+        description: 'No se pudo conectar con el servidor. Por favor, intenta de nuevo.',
       });
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -1,0 +1,1544 @@
+[
+  {
+    "id": 1,
+    "nombre": "-Envíelo a colegas y amigos para que lo disfruten .",
+    "definicion": "es",
+    "roles": [],
+    "escala": [
+      "Eficiente"
+    ]
+  },
+  {
+    "id": 2,
+    "nombre": "POR  DEBAJO DE LO ESPERADO : Demuestra  conductas mínimas,  lo que indica la",
+    "definicion": "proba bilidad de que el individuo  tiene  dificultades en  tareas o asignaciones claves y requiere\ndesarrollo para superar  esa brecha manifiesta .",
+    "roles": [],
+    "escala": []
+  },
+  {
+    "id": 3,
+    "nombre": "PROMEDIO SUFICIENTE : Demuestra  conductas  que son aceptable s o suficientes como",
+    "definicion": "evidencia de que el individuo tiene la competencia requerida.",
+    "roles": [],
+    "escala": []
+  },
+  {
+    "id": 4,
+    "nombre": "EFICIENTE : Demuestra conductas que son evidencia de un nivel significativo  en la",
+    "definicion": "competencia.",
+    "roles": [],
+    "escala": []
+  },
+  {
+    "id": 5,
+    "nombre": "SUPERLATIVO : Demuestra conductas qu e son evidencia del mayor nivel de la competencia, lo",
+    "definicion": "................................ ................................ ................................ ...... 104",
+    "roles": [
+      "Si el rol es observable dentro de la dinámica de trabajo.",
+      "Si el rol está inequívocamente ligado al quehacer del titular del puesto.",
+      "Si el rol es parte sustantiva del desempeño del puesto.",
+      "El rol de desempeño es importante dentro del quehacer del titular.",
+      "Que su ejecución es imprescindible.",
+      "Que tiene un impacto o incidencia en el desempeño.",
+      "Que el rol de desempeño forma parte de un patrón de comportamiento o acción.",
+      "Que el rol se repite en más de un proceso de trabajo",
+      "Que puede generalizarse a más de un titular del puesto."
+    ],
+    "escala": []
+  },
+  {
+    "id": 6,
+    "nombre": "Competencia 6",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 7,
+    "nombre": "Competencia 7",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 8,
+    "nombre": "Competencia 8",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 9,
+    "nombre": "Competencia 9",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 10,
+    "nombre": "Competencia 10",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 11,
+    "nombre": "Competencia 11",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 12,
+    "nombre": "Competencia 12",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 13,
+    "nombre": "Competencia 13",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 14,
+    "nombre": "Competencia 14",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 15,
+    "nombre": "Competencia 15",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 16,
+    "nombre": "Competencia 16",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 17,
+    "nombre": "Competencia 17",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 18,
+    "nombre": "Competencia 18",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 19,
+    "nombre": "Competencia 19",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 20,
+    "nombre": "Competencia 20",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 21,
+    "nombre": "Competencia 21",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 22,
+    "nombre": "Competencia 22",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 23,
+    "nombre": "Competencia 23",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 24,
+    "nombre": "Competencia 24",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 25,
+    "nombre": "Competencia 25",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 26,
+    "nombre": "Competencia 26",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 27,
+    "nombre": "Competencia 27",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 28,
+    "nombre": "Competencia 28",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 29,
+    "nombre": "Competencia 29",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 30,
+    "nombre": "Competencia 30",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 31,
+    "nombre": "Competencia 31",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 32,
+    "nombre": "Competencia 32",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 33,
+    "nombre": "Competencia 33",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 34,
+    "nombre": "Competencia 34",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 35,
+    "nombre": "Competencia 35",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 36,
+    "nombre": "Competencia 36",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 37,
+    "nombre": "Competencia 37",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 38,
+    "nombre": "Competencia 38",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 39,
+    "nombre": "Competencia 39",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 40,
+    "nombre": "Competencia 40",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 41,
+    "nombre": "Competencia 41",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 42,
+    "nombre": "Competencia 42",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 43,
+    "nombre": "Competencia 43",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 44,
+    "nombre": "Competencia 44",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 45,
+    "nombre": "Competencia 45",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 46,
+    "nombre": "Competencia 46",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 47,
+    "nombre": "Competencia 47",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 48,
+    "nombre": "Competencia 48",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 49,
+    "nombre": "Competencia 49",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 50,
+    "nombre": "Competencia 50",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 51,
+    "nombre": "Competencia 51",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 52,
+    "nombre": "Competencia 52",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 53,
+    "nombre": "Competencia 53",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 54,
+    "nombre": "Competencia 54",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 55,
+    "nombre": "Competencia 55",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 56,
+    "nombre": "Competencia 56",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 57,
+    "nombre": "Competencia 57",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 58,
+    "nombre": "Competencia 58",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 59,
+    "nombre": "Competencia 59",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 60,
+    "nombre": "Competencia 60",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 61,
+    "nombre": "Competencia 61",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 62,
+    "nombre": "Competencia 62",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 63,
+    "nombre": "Competencia 63",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 64,
+    "nombre": "Competencia 64",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 65,
+    "nombre": "Competencia 65",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 66,
+    "nombre": "Competencia 66",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 67,
+    "nombre": "Competencia 67",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 68,
+    "nombre": "Competencia 68",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 69,
+    "nombre": "Competencia 69",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 70,
+    "nombre": "Competencia 70",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 71,
+    "nombre": "Competencia 71",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 72,
+    "nombre": "Competencia 72",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 73,
+    "nombre": "Competencia 73",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 74,
+    "nombre": "Competencia 74",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 75,
+    "nombre": "Competencia 75",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 76,
+    "nombre": "Competencia 76",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 77,
+    "nombre": "Competencia 77",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 78,
+    "nombre": "Competencia 78",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 79,
+    "nombre": "Competencia 79",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 80,
+    "nombre": "Competencia 80",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 81,
+    "nombre": "Competencia 81",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 82,
+    "nombre": "Competencia 82",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 83,
+    "nombre": "Competencia 83",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 84,
+    "nombre": "Competencia 84",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 85,
+    "nombre": "Competencia 85",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 86,
+    "nombre": "Competencia 86",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 87,
+    "nombre": "Competencia 87",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 88,
+    "nombre": "Competencia 88",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 89,
+    "nombre": "Competencia 89",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 90,
+    "nombre": "Competencia 90",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 91,
+    "nombre": "Competencia 91",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 92,
+    "nombre": "Competencia 92",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 93,
+    "nombre": "Competencia 93",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 94,
+    "nombre": "Competencia 94",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 95,
+    "nombre": "Competencia 95",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 96,
+    "nombre": "Competencia 96",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 97,
+    "nombre": "Competencia 97",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 98,
+    "nombre": "Competencia 98",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 99,
+    "nombre": "Competencia 99",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 100,
+    "nombre": "Competencia 100",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 101,
+    "nombre": "Competencia 101",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 102,
+    "nombre": "Competencia 102",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 103,
+    "nombre": "Competencia 103",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 104,
+    "nombre": "Competencia 104",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 105,
+    "nombre": "Competencia 105",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 106,
+    "nombre": "Competencia 106",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 107,
+    "nombre": "Competencia 107",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 108,
+    "nombre": "Competencia 108",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 109,
+    "nombre": "Competencia 109",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 110,
+    "nombre": "Competencia 110",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 111,
+    "nombre": "Competencia 111",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 112,
+    "nombre": "Competencia 112",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 113,
+    "nombre": "Competencia 113",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 114,
+    "nombre": "Competencia 114",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 115,
+    "nombre": "Competencia 115",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 116,
+    "nombre": "Competencia 116",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 117,
+    "nombre": "Competencia 117",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 118,
+    "nombre": "Competencia 118",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 119,
+    "nombre": "Competencia 119",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  },
+  {
+    "id": 120,
+    "nombre": "Competencia 120",
+    "definicion": "",
+    "roles": [],
+    "escala": [
+      "Insuficiente",
+      "Por debajo de lo esperado",
+      "Promedio suficiente",
+      "Eficiente",
+      "Superlativo"
+    ]
+  }
+]

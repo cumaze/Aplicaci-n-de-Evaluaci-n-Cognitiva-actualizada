@@ -7,6 +7,7 @@ import Assessment from '@/components/assessment';
 import Report from '@/components/report';
 import { Card } from '@/components/ui/card';
 import { Bot } from 'lucide-react';
+import EvaluationModeModal from '@/components/EvaluationModeModal';
 
 type Step = 'onboarding' | 'assessment' | 'report';
 
@@ -17,11 +18,19 @@ export default function Home() {
   const [answers, setAnswers] = useState<Answers>({});
   const [reportSummary, setReportSummary] = useState<string>('');
   const [grades, setGrades] = useState<CompetencyGrade[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [evaluationMode, setEvaluationMode] = useState<'simulated' | 'real'>('simulated');
+
+  const handleModeSelect = (mode: 'simulated' | 'real') => {
+    setEvaluationMode(mode);
+    setIsModalOpen(false);
+    setStep('assessment');
+  };
 
   const handleStartAssessment = (data: UserData, generatedQuestions: Question[]) => {
     setUserData(data);
     setQuestions(generatedQuestions);
-    setStep('assessment');
+    setIsModalOpen(true);
   };
 
   const handleFinishAssessment = (finalAnswers: Answers, summary: string, newGrades: CompetencyGrade[]) => {
@@ -38,6 +47,7 @@ export default function Home() {
     setReportSummary('');
     setGrades([]);
     setStep('onboarding');
+    setEvaluationMode('simulated');
   };
 
   const renderStep = () => {
@@ -45,7 +55,14 @@ export default function Home() {
       case 'onboarding':
         return <OnboardingForm onStartAssessment={handleStartAssessment} />;
       case 'assessment':
-        return <Assessment questions={questions} userData={userData!} onFinishAssessment={handleFinishAssessment} />;
+        return (
+          <Assessment 
+            questions={questions} 
+            userData={userData!} 
+            onFinishAssessment={handleFinishAssessment} 
+            evaluationMode={evaluationMode}
+          />
+        );
       case 'report':
         return <Report userData={userData!} answers={answers} summary={reportSummary} questions={questions} grades={grades} onStartOver={handleStartOver} />;
       default:
@@ -65,6 +82,12 @@ export default function Home() {
         <Card className={`w-full shadow-lg ${step === 'report' ? 'printable-content' : ''}`}>
           {renderStep()}
         </Card>
+
+        <EvaluationModeModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onModeSelect={handleModeSelect}
+        />
       </div>
     </main>
   );

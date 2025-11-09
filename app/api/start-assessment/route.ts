@@ -1,25 +1,72 @@
 import { NextResponse } from 'next/server';
 import type { Question } from '@/lib/types';
+import { CAREERS } from '@/lib/data';
 
 export async function POST(req: Request) {
   try {
     const { career, level } = (await req.json()) as { career: string; level: string };
 
-    // Lógica temporal - reemplaza con tu lógica real
-    const questions: Question[] = [
-      {
-        competency: 'Comunicación',
-        question: 'Describe una situación donde tuviste que comunicar una idea compleja a un equipo.'
-      },
-      {
-        competency: 'Liderazgo', 
-        question: 'Cuenta sobre un proyecto que lideraste y cómo motivaste al equipo.'
-      },
-      {
-        competency: 'Resolución de problemas',
-        question: 'Explica cómo abordaste un problema difícil en tu trabajo.'
+    // ENCONTRAR LA CARRERA SELECCIONADA
+    const selectedCareer = CAREERS.find(c => c.key === career);
+    
+    if (!selectedCareer) {
+      return NextResponse.json(
+        { success: false, error: 'Carrera no encontrada' },
+        { status: 404 },
+      );
+    }
+
+    // GENERAR PREGUNTAS PARA LAS 10 COMPETENCIAS DE LA CARRERA
+    const questions: Question[] = selectedCareer.competencies.map((competency, index) => {
+      // Generar preguntas contextualizadas según la competencia
+      let questionText = '';
+      
+      switch (competency) {
+        case 'Liderazgo':
+        case 'Liderazgo Transformacional':
+          questionText = `Describe una situación donde demostraste ${competency.toLowerCase()} en tu área profesional`;
+          break;
+        case 'Trabajo en Equipo':
+          questionText = '¿Cómo manejas los conflictos dentro de un equipo de trabajo? Describe tu enfoque.';
+          break;
+        case 'Planificación':
+        case 'Planificación y Organización':
+          questionText = 'Cuando enfrentas múltiples proyectos simultáneos, ¿cómo organizas tu trabajo? Proporciona un ejemplo.';
+          break;
+        case 'Resolución de Problemas':
+        case 'Solución de Problemas':
+          questionText = 'Describe tu proceso para abordar problemas complejos en tu área profesional.';
+          break;
+        case 'Comunicación Escrita':
+          questionText = 'Describe una situación donde tu comunicación escrita fue crucial para el éxito de un proyecto.';
+          break;
+        case 'Innovación':
+          questionText = 'Proporciona un ejemplo de cómo has implementado ideas innovadoras en tu trabajo.';
+          break;
+        case 'Adaptabilidad':
+          questionText = 'Describe cómo manejas los cambios inesperados en los proyectos o prioridades.';
+          break;
+        case 'Pensamiento Estratégico':
+          questionText = 'Explica cómo incorporas la visión a largo plazo en tus decisiones diarias.';
+          break;
+        case 'Perspicacia Financiera':
+          questionText = 'Describe una situación donde tu comprensión financiera impactó positivamente una decisión.';
+          break;
+        case 'Gestión de Recursos':
+          questionText = '¿Cómo optimizas los recursos disponibles para maximizar resultados? Proporciona un ejemplo.';
+          break;
+        default:
+          questionText = `Describe tu experiencia y enfoque en ${competency.toLowerCase()}`;
       }
-    ];
+
+      return {
+        id: (index + 1).toString(),
+        competency: competency,
+        question: questionText,
+        area: selectedCareer.area,
+        type: 'text' // o 'multiple_choice' si quieres agregar opciones
+      };
+    });
 
     return NextResponse.json({ success: true, questions });
   } catch (e: any) {
