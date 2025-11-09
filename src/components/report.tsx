@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { CAREERS } from '@/lib/data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { generateVideoTaskAction, analyzeJobProfilesAction } from '../app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,11 +40,11 @@ const JobProfilesSection = ({ userData, grades, jobProfiles }: { userData: UserD
       }
       setIsLoading(true);
       setError(null);
-      const result = await analyzeJobProfilesAction({
-        userData,
-        grades,
-        jobProfiles,
-      });
+      const result = await fetch('/api/analyze-job-profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userData, grades, jobProfiles }),
+      }).then(r => r.json());
       if (result.success && result.analyses) {
         setAnalyses(result.analyses);
       } else {
@@ -151,7 +150,6 @@ export default function Report({ userData, answers, summary, questions, grades, 
     toast({
       title: "¡Tienes una nueva tarea!",
       description: "Haz clic en 'Tarea de Validación por Video' para ver las instrucciones.",
-      action: <Sparkles className="h-5 w-5 text-accent" />,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -188,7 +186,11 @@ export default function Report({ userData, answers, summary, questions, grades, 
     }
 
     setIsLoadingTask(true);
-    const result = await generateVideoTaskAction({ answers });
+    const result = await fetch('/api/generate-video-task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers }),
+    }).then(r => r.json());
     setIsLoadingTask(false);
 
     if (result.success && result.tasks && result.tasks.length > 0) {

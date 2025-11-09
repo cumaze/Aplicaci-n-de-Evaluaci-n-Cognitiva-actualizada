@@ -10,7 +10,7 @@ import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { startAssessmentAction } from '../app/actions';
+import { startAssessmentAction } from '@/app/actions';
 import type { Question, UserData } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
