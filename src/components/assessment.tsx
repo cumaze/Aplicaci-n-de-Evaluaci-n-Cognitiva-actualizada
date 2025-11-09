@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { generateReportAction } from '@/app/actions';
+import { generateReportAction } from '../app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
