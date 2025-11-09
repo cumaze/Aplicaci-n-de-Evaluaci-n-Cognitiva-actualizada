@@ -10,7 +10,6 @@ import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { startAssessmentAction } from '@/app/actions';
 import type { Question, UserData } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -40,7 +39,11 @@ export default function OnboardingForm({ onStartAssessment }: OnboardingFormProp
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    const result = await startAssessmentAction({ career: values.career, level: values.level });
+    const result = await fetch('/api/start-assessment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ career: values.career, level: values.level }),
+    }).then(r => r.json());
     setLoading(false);
 
     if (result.success && result.questions) {

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { generateReportAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -40,7 +39,11 @@ export default function Assessment({ questions, userData, onFinishAssessment }: 
 
   const handleFinish = async (finalAnswers: Answers) => {
     setLoading(true);
-    const result = await generateReportAction({ userData, answers: finalAnswers });
+    const result = await fetch('/api/generate-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userData, answers: finalAnswers }),
+    }).then(r => r.json());
     setLoading(false);
 
     if (result.success && result.summary && result.grades) {
