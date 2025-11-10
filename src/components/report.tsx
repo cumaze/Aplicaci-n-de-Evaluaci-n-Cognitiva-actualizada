@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import SuggestedJobsAccordion from './SuggestedJobsAccordion';
+import SuggestedJobsAccordion from '@/components/SuggestedJobsAccordion';
 import type { UserData, CompetencyGrade } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
