@@ -1,275 +1,234 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import type { UserData, CompetencyGrade } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Mail, Download, Video } from "lucide-react";
-import SuggestedJobsAccordion, { SuggestedJob } from "@/components/SuggestedJobsAccordion";
+import { useEffect, useMemo, useState } from 'react';
+import type { Answers, Question, UserData, CompetencyGrade } from '@/lib/types';
+import { Card } from '@/components/ui/card';
 
-interface ReportProps {
+type Props = {
   userData: UserData;
+  answers: Answers;
   summary: string;
+  questions: Question[];
   grades: CompetencyGrade[];
-  onRestart: () => void;
+  onStartOver: () => void;
+};
+
+/**
+ * Heurística anti-incoherencias:
+ * Si alguna respuesta del usuario indica "sin experiencia" u otras frases similares,
+ * las competencias blandas relacionadas NO pueden salir en nivel "Avanzado".
+ * Las normalizamos a "Básico" (o "Intermedio" si el puntaje original estaba alto pero el texto niega experiencia).
+ */
+function normalizeGrades(grades: CompetencyGrade[], answers: Answers): CompetencyGrade[] {
+  const noExpRegex = /(sin experiencia|no tengo experiencia|nunca he|no he trabajado|cero experiencia)/i;
+
+  const anyNoExp = Object.values(answers || {}).some((a) =>
+    typeof a === 'string' && noExpRegex.test(a)
+  );
+
+  if (!anyNoExp) return grades;
+
+  // Lista de competencias blandas comunes (ajusta si tus nombres difieren)
+  const SOFT_HINTS = [
+    'Comunicación',
+    'Trabajo en equipo',
+    'Liderazgo',
+    'Resolución de problemas',
+    'Adaptabilidad',
+    'Pensamiento crítico',
+    'Gestión del tiempo',
+    'Orientación al cliente',
+  ];
+
+  return grades.map((g) => {
+    const isSoft =
+      SOFT_HINTS.some((s) => g.competency.toLowerCase().includes(s.toLowerCase())) ||
+      /blanda|soft/i.test(g.competency);
+
+    if (!isSoft) return g;
+
+    // Si el nivel era Avanzado pero el usuario reporta "sin experiencia",
+    // bajamos a Intermedio o Básico según puntaje original.
+    if (g.level === 'Avanzado') {
+      if (g.score >= 70) {
+        return { ...g, level: 'Intermedio', score: Math.min(g.score, 69) };
+      } else {
+        return { ...g, level: 'Básico', score: Math.min(g.score, 49) };
+      }
+    }
+
+    // Si decía Intermedio y el texto niega experiencia, lo bajamos un peldaño.
+    if (g.level === 'Intermedio') {
+      return { ...g, level: 'Básico', score: Math.min(g.score, 59) };
+    }
+
+    // Si ya era Básico, lo dejamos.
+    return g;
+  });
 }
 
-export default function Report({ userData, summary, grades, onRestart }: ReportProps) {
-  const [showVideoTask, setShowVideoTask] = useState(false);
-  const [loadingJobs, setLoadingJobs] = useState(false);
-  const [jobsError, setJobsError] = useState<string | null>(null);
-  const [lowerJobs, setLowerJobs] = useState<SuggestedJob[]>([]);
-  const [upperJobs, setUpperJobs] = useState<SuggestedJob[]>([]);
+/**
+ * Genera 5 puestos sugeridos (mandos medios o abajo) a partir de las mejores competencias.
+ * Si falla la API del backend, esto garantiza que el reporte SIEMPRE muestre 5 puestos.
+ */
+async function fetchPositionsFromAPI(payload: any): Promise<string[]> {
+  try {
+    const resp = await fetch('/api/generate-job-profiles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) throw new Error('Bad response');
+    const data = await resp.json();
+    // Acepta formatos: { positions: string[] } o string[]
+    const positions = Array.isArray(data) ? data : data?.positions;
+    if (Array.isArray(positions) && positions.length) return positions.slice(0, 5);
+  } catch {
+    // caemos al fallback
+  }
+  return [];
+}
 
-  const averageScore = grades.length
-    ? grades.reduce((acc, g) => acc + g.score, 0) / grades.length
-    : 0;
+function generatePositionsFallback(grades: CompetencyGrade[], userData: UserData): string[] {
+  const top = [...grades]
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+    .slice(0, 3)
+    .map((g) => g.competency.toLowerCase());
 
-  useEffect(() => {
-    generateJobs();
-  }, []);
+  const bank: string[] = [
+    'Asistente Administrativo',
+    'Ejecutivo de Atención al Cliente',
+    'Analista de Datos Jr.',
+    'Asistente de Operaciones',
+    'Coordinador de Soporte',
+    'Analista de Marketing Jr.',
+    'Asistente de Recursos Humanos',
+    'Project Coordinator (Junior)',
+    'Auxiliar de Logística',
+    'Soporte Técnico Nivel 1',
+  ];
 
-  async function generateJobs() {
-    try {
-      setJobsError(null);
-      setLoadingJobs(true);
+  // Filtrado sencillo según competencias destacadas
+  const picks: string[] = [];
+  const want = (s: string) => {
+    const lc = s.toLowerCase();
+    return (
+      (top.some((t) => /dato|anal|crític|excel/i.test(t)) && /analista|datos|project|coordin/i.test(lc)) ||
+      (top.some((t) => /comunic|cliente|equipo|lider/i.test(t)) && /cliente|recursos|coordin|soporte/i.test(lc)) ||
+      (top.some((t) => /organ|tiempo|adapt|oper/i.test(t)) && /admin|oper|logíst|project/i.test(lc))
+    );
+  };
 
-      const seedsByCareer: Record<string, string[]> = {
-        administracion: ["Auxiliar Contable", "Gerente Financiero"],
-        ventas: ["Vendedor", "Gerente de Ventas"],
-        marketing: ["Ejecutivo de Marketing", "Gerente de Mercadeo"],
-        sistemas: ["Analista de Sistemas", "Líder de Proyectos TI"],
-      };
-      const key = (userData?.career || "").toLowerCase().trim();
-      const existingJobs = seedsByCareer[key] ?? ["Auxiliar Contable", "Gerente Financiero"];
-
-      const resp = await fetch("/api/generate-job-profiles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          existingJobs,
-          targetLower: 5,
-          targetUpper: 3,
-        }),
-      });
-
-      if (!resp.ok) {
-        const text = await resp.text();
-        throw new Error(text || `HTTP ${resp.status}`);
-      }
-
-      const data = await resp.json();
-      setLowerJobs(data.lower || []);
-      setUpperJobs(data.upper || []);
-    } catch (e: any) {
-      setJobsError(e?.message || "No se pudieron generar los puestos");
-    } finally {
-      setLoadingJobs(false);
-    }
+  for (const role of bank) {
+    if (picks.length >= 5) break;
+    if (want(role) && !picks.includes(role)) picks.push(role);
   }
 
-  const handlePrint = () => {
-    const fileName = `Informe_Evaluacion_${userData.name}_${new Date().toISOString().split("T")[0]}.pdf`;
-    const originalTitle = document.title;
-    document.title = fileName;
-    window.print();
-    document.title = originalTitle;
-  };
+  // Completa si quedaron menos de 5
+  for (const role of bank) {
+    if (picks.length >= 5) break;
+    if (!picks.includes(role)) picks.push(role);
+  }
 
-  const handlePrintVideoTask = () => {
-    const fileName = `Tarea_Validacion_Video_${userData.name}_${new Date().toISOString().split("T")[0]}.pdf`;
-    const originalTitle = document.title;
-    document.title = fileName;
-    window.print();
-    document.title = originalTitle;
-  };
+  return picks.slice(0, 5);
+}
 
-  const handleEmail = () => {
-    const subject = encodeURIComponent(`Reporte de Evaluación - ${userData.name}`);
-    const body = encodeURIComponent(
-      `¡Hola ${userData.name}!
+export default function Report({ userData, answers, summary, questions, grades, onStartOver }: Props) {
+  // 1) Normalizar incoherencias en blandas
+  const correctedGrades = useMemo(() => normalizeGrades(grades || [], answers || {}), [grades, answers]);
 
-INSTRUCCIONES PARA GUARDAR TU REPORTE:
+  // 2) Cargar/crear 5 puestos sugeridos
+  const [positions, setPositions] = useState<string[]>([]);
 
-1) Haz clic en "Imprimir o Descargar PDF".
-2) En la impresora, selecciona "Guardar como PDF".
-3) Nómbralo: Informe_Evaluacion_${userData.name}.pdf
+  useEffect(() => {
+    let cancelled = false;
 
-📊 TUS DATOS
-- Carrera: ${userData.career}
-- Fecha: ${new Date().toLocaleDateString()}
+    (async () => {
+      const payload = {
+        user: userData,
+        summary,
+        grades: correctedGrades,
+        answers,
+      };
+      const fromApi = await fetchPositionsFromAPI(payload);
+      const finalPositions =
+        fromApi.length >= 5 ? fromApi.slice(0, 5) : generatePositionsFallback(correctedGrades, userData);
+      if (!cancelled) setPositions(finalPositions);
+    })();
 
-Adjunta ese PDF y envíalo.  
-Saludos,
-Equipo de Evaluación Cognitiva`
-    );
-    window.location.href = `mailto:${userData.email || ""}?subject=${subject}&body=${body}`;
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [userData, summary, correctedGrades, answers]);
 
+  // 3) Render del informe
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 print:bg-white">
-      <div className="max-w-4xl mx-auto">
-        {/* Encabezado */}
-        <Card className="mb-6 print:shadow-none">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-gray-900">
-              📊 Reporte de Evaluación Cognitiva
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Resultados para {userData.name} - {userData.career}
-            </CardDescription>
-          </CardHeader>
+    <div className="p-6 space-y-6">
+      {/* Título SIN el rótulo que molestaba */}
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">Resumen General</h2>
+        {/* Eliminado: “Evaluación para yo (modo simulado - Groq no disponible)” */}
+      </div>
+
+      {/* Resumen textual */}
+      {summary && (
+        <Card className="p-4">
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{summary}</p>
         </Card>
+      )}
 
-        {/* Información del Estudiante */}
-        <Card className="mb-6 print:shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">👤 Información del Estudiante</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-500">Nombre</label>
-                <p className="font-semibold">{userData.name}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Carrera</label>
-                <p className="font-semibold">{userData.career}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Resumen General */}
-        <Card className="mb-6 print:shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">📝 Resumen General</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 leading-relaxed">{summary}</p>
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Puntuación Promedio</span>
-                <Badge variant="secondary" className="text-lg">
-                  {averageScore.toFixed(1)}/5.0
-                </Badge>
-              </div>
-              <Progress value={(averageScore / 5) * 100} className="mt-2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Puestos Según Competencias Adquiridas */}
-        <Card className="mb-6 print:shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              💼 Puestos Según Competencias Adquiridas
-            </CardTitle>
-            <CardDescription>
-              Generados según tu carrera y las competencias desarrolladas
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {jobsError && <p className="text-sm text-red-600">Error: {jobsError}</p>}
-
-            <SuggestedJobsAccordion title="Mandos Medios hacia Abajo (5)" items={lowerJobs} />
-            <SuggestedJobsAccordion title="Mandos Medios hacia Arriba (3)" items={upperJobs} />
-          </CardContent>
-        </Card>
-
-        {/* Competencias blandas evaluadas */}
-        <Card className="mb-6 print:shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">🎯 Competencias blandas evaluadas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {grades.map((grade) => (
-                <div key={grade.competency} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold text-lg">{grade.competency}</h4>
-                    <div className="text-right">
-                      <Badge className="text-sm">{grade.score.toFixed(1)}/5.0</Badge>
-                      <Badge variant="secondary" className="ml-2">{grade.grade}</Badge>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">Nivel: {grade.nivelConductual}</span>
-                    <Progress value={(grade.score / 5) * 100} className="w-32" />
-                  </div>
-                  <p className="text-gray-700 text-sm">{grade.justification}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Acciones */}
-        {!showVideoTask ? (
-          <Card className="print:hidden">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">🚀 Acciones</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button onClick={handlePrint} className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Imprimir o Descargar PDF
-                </Button>
-                <Button onClick={handleEmail} variant="outline" className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Enviar por Correo
-                </Button>
-                <Button onClick={() => setShowVideoTask(true)} variant="secondary" className="flex items-center gap-2">
-                  <Video className="w-4 h-4" />
-                  Tarea de Validación por Video
-                </Button>
-              </div>
-              <div className="mt-6 pt-6 border-t">
-                <Button
-                  onClick={() => {
-                    setShowVideoTask(false);
-                    window.location.href = "/";
-                    onRestart();
-                  }}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Realizar Nueva Evaluación
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="print:hidden">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">🎥 Tarea de Validación por Video</CardTitle>
-              <CardDescription>Instrucciones para la validación de competencias mediante video</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 className="font-semibold text-yellow-800 mb-2">📋 Instrucciones:</h4>
-                <ul className="text-yellow-700 list-disc list-inside space-y-1">
-                  <li>Graba un video de 2–3 minutos explicando tu experiencia en la evaluación</li>
-                  <li>Menciona las competencias donde te sentiste más fuerte</li>
-                  <li>Comparte áreas de oportunidad identificadas</li>
-                  <li>Sube el video a Google Drive o YouTube y comparte el enlace</li>
-                </ul>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button onClick={handlePrintVideoTask} className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Descargar Instrucciones PDF
-                </Button>
-                <Button onClick={() => setShowVideoTask(false)} variant="outline">
-                  Volver al Reporte
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Puestos sugeridos (siempre 5) */}
+      <div>
+        <h3 className="text-xl font-semibold text-foreground mb-2">Puestos sugeridos (mandos medios y junior)</h3>
+        <ul className="list-disc pl-6 space-y-1">
+          {positions.map((p, i) => (
+            <li key={i} className="text-sm text-foreground">{p}</li>
+          ))}
+        </ul>
+        {positions.length === 0 && (
+          <p className="text-sm text-muted-foreground mt-2">No se encontraron puestos. (Revisa conexión o API). Se mostrará un fallback automático.</p>
         )}
+      </div>
+
+      {/* Competencias (ya normalizadas) */}
+      <div>
+        <h3 className="text-xl font-semibold text-foreground mb-2">Competencias evaluadas</h3>
+        <div className="overflow-x-auto rounded-md border">
+          <table className="min-w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="px-3 py-2 text-left font-medium">Competencia</th>
+                <th className="px-3 py-2 text-left font-medium">Nivel</th>
+                <th className="px-3 py-2 text-left font-medium">Puntaje</th>
+              </tr>
+            </thead>
+            <tbody>
+              {correctedGrades.map((g, idx) => (
+                <tr key={idx} className="border-t">
+                  <td className="px-3 py-2">{g.competency}</td>
+                  <td className="px-3 py-2">{g.level}</td>
+                  <td className="px-3 py-2">{typeof g.score === 'number' ? `${g.score}` : '—'}</td>
+                </tr>
+              ))}
+              {(!correctedGrades || correctedGrades.length === 0) && (
+                <tr>
+                  <td className="px-3 py-3 text-muted-foreground" colSpan={3}>
+                    Sin datos de competencias.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-2">
+        <button
+          onClick={onStartOver}
+          className="rounded-lg border px-4 py-2 text-sm hover:bg-muted"
+        >
+          Empezar de nuevo
+        </button>
       </div>
     </div>
   );
