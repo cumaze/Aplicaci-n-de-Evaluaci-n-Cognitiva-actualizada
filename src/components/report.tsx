@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Mail, Download, Video } from "lucide-react";
+import { Mail, Download, Video, Link as LinkIcon, RefreshCcw } from "lucide-react";
 import SuggestedJobsAccordion, { SuggestedJob } from "@/components/SuggestedJobsAccordion";
 
 interface ReportProps {
@@ -66,64 +66,6 @@ Evaluación Cognitiva`
     window.open(`mailto:${userData.email || ""}?subject=${subject}&body=${body}`);
   };
 
-  // --- Nuevas funciones para compartir ---
-  function encodeStateToLink() {
-    // Prepara un snapshot mínimo y serializa a base64 url-safe
-    const snapshot = {
-      user: { name: userData.name, career: userData.career },
-      summary,
-      grades, // si es pesado, se puede mapear a {competency, score, grade}
-      ts: Date.now(),
-    };
-    const json = JSON.stringify(snapshot);
-    const b64 = typeof window !== "undefined" ? btoa(unescape(encodeURIComponent(json))) : "";
-    const safe = b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-
-    // Ruta pública de lectura (sin backend): /view?d=<payload>
-    const base = typeof window !== "undefined" ? window.location.origin : "";
-    return `${base}/view?d=${safe}`;
-  }
-
-  function copyToClipboard(text: string) {
-    try {
-      navigator.clipboard.writeText(text);
-      alert("Enlace copiado al portapapeles.");
-    } catch {
-      // fallback
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      alert("Enlace copiado.");
-    }
-  }
-
-  function handleShareWithStudent() {
-    const email = prompt("Correo del alumno:");
-    if (!email) return;
-
-    const link = encodeStateToLink();
-    const subject = encodeURIComponent(`Tu Reporte de Evaluación Cognitiva`);
-    const body = encodeURIComponent(
-      `Hola,
-
-Te compartimos tu reporte de evaluación. Abre este enlace para verlo:
-
-${link}
-
-Sugerencia:
-- Si deseas conservarlo como PDF, abre el enlace y usa "Imprimir -> Guardar como PDF".
-
-Saludos,
-Evaluación Cognitiva`
-    );
-
-    // Abre el cliente de correo del usuario con asunto/cuerpo
-    window.open(`mailto:${email}?subject=${subject}&body=${body}`);
-  }
-
   // ---------- utilidades de selección ----------
   function topSoftCompetencies(count = 3): string[] {
     const sorted = [...grades].sort((a, b) => b.score - a.score);
@@ -131,7 +73,6 @@ Evaluación Cognitiva`
     return Array.from(new Set(names)).slice(0, count);
   }
 
-  // Duras evaluadas por IA (placeholder en simulado) según área
   function hardEvaluatedPool(careerKey: string): string[] {
     switch (careerKey) {
       case "sistemas":
@@ -140,12 +81,11 @@ Evaluación Cognitiva`
         return ["Google Analytics/GA4", "SEO On-Page", "Gestión de Ads"];
       case "ventas":
         return ["CRM (p. ej., HubSpot)", "Prospección B2B", "Negociación Comercial"];
-      default: // administración u otro
+      default:
         return ["Excel Avanzado", "Contabilidad Básica", "Análisis de Datos"];
     }
   }
 
-  // Duras sugeridas extra (no evaluadas)
   function hardSuggestedPool(careerKey: string): string[] {
     switch (careerKey) {
       case "sistemas":
@@ -170,7 +110,6 @@ Evaluación Cognitiva`
     return out;
   }
 
-  // Construir items completos a partir de títulos base (lower/upper) + enriquecimiento local
   function enrichJobs(
     bare: { job: string; description: string }[],
     careerKey: string
@@ -182,7 +121,6 @@ Evaluación Cognitiva`
     const hardAllExclude = new Set([...softTop, ...hardEval]);
     const hardSug = distinctWithout(hardSuggestedPool(careerKey), hardAllExclude, 3);
 
-    // Notas APR fijas (criterios)
     const aprNotes = {
       atinencia:
         "El rol está significativamente relacionado con el puesto y su quehacer diario; es observable en la dinámica de trabajo.",
@@ -199,9 +137,72 @@ Evaluación Cognitiva`
       hardCompetenciesEvaluated: hardEval,
       hardCompetenciesSuggested: hardSug,
       aprNotes,
-      match: undefined, // opcional
+      match: undefined,
     }));
   }
+
+  // ====== NUEVO: helpers de compartir y enlace ======
+  function encodeStateToLink() {
+    const snapshot = {
+      user: { name: userData.name, career: userData.career },
+      summary,
+      grades,
+      ts: Date.now(),
+    };
+    const json = JSON.stringify(snapshot);
+    const b64 = typeof window !== "undefined" ? btoa(unescape(encodeURIComponent(json))) : "";
+    const safe = b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    const base = typeof window !== "undefined" ? window.location.origin : "";
+    return `${base}/view?d=${safe}`;
+  }
+
+  function copyToClipboard(text: string) {
+    try {
+      navigator.clipboard.writeText(text);
+      alert("Enlace copiado al portapapeles.");
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      alert("Enlace copiado.");
+    }
+  }
+
+  function handleShareWithStudent() {
+    const email = prompt("Correo del alumno:");
+    if (!email) return;
+
+    const link = encodeStateToLink();
+    const subject = `Tu Reporte de Evaluación Cognitiva`;
+    const body = `Hola,
+
+Te compartimos tu reporte de evaluación. Abre este enlace para verlo:
+
+${link}
+
+Sugerencia:
+- Si deseas conservarlo como PDF, abre el enlace y usa "Imprimir -> Guardar como PDF".
+
+Saludos,
+Evaluación Cognitiva`;
+
+    // Intento 1: Gmail Web (si usa navegador con sesión de Gmail)
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(
+      email
+    )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    const win = window.open(gmailUrl, "_blank");
+    // Si el popup fue bloqueado o no hay Gmail, usar mailto como fallback
+    if (!win) {
+      window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(
+        subject
+      )}&body=${encodeURIComponent(body)}`;
+    }
+  }
+  // ====== FIN helpers ======
 
   async function generateJobs() {
     try {
@@ -213,7 +214,7 @@ Evaluación Cognitiva`
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          existingJobs: [], // no necesario, el backend usa bancos por carrera
+          existingJobs: [],
           targetLower: 5,
           targetUpper: 3,
           career: key,
@@ -229,11 +230,9 @@ Evaluación Cognitiva`
         upperBare = Array.isArray(data?.upper) ? data.upper : [];
       }
 
-      // Fallback local si el endpoint no devuelve lo esperado
       const needLower = 5;
       const needUpper = 3;
 
-      // Si vienen vacíos o incompletos, generamos títulos genéricos locales
       const fallbackBanks: Record<string, { lower: string[]; upper: string[]; desc: string }> = {
         administracion: {
           lower: [
@@ -289,7 +288,12 @@ Evaluación Cognitiva`
         },
       };
 
-      function fillBare(arr: { job: string; description: string }[], needed: number, bankKey: string, kind: "lower" | "upper") {
+      function fillBare(
+        arr: { job: string; description: string }[],
+        needed: number,
+        bankKey: string,
+        kind: "lower" | "upper"
+      ) {
         const bank = fallbackBanks[bankKey] ?? fallbackBanks["administracion"];
         const pool = bank[kind];
         const desc = bank.desc;
@@ -301,7 +305,6 @@ Evaluación Cognitiva`
             copy.push({ job: title, description: desc });
           }
         }
-        // si aún falta, rellena con genéricos
         while (copy.length < needed) {
           copy.push({
             job: kind === "lower" ? `Puesto Operativo ${copy.length + 1}` : `Puesto Ejecutivo ${copy.length + 1}`,
@@ -315,14 +318,12 @@ Evaluación Cognitiva`
       if (!lowerBare || lowerBare.length < needLower) lowerBare = fillBare(lowerBare || [], needLower, bankKey, "lower");
       if (!upperBare || upperBare.length < needUpper) upperBare = fillBare(upperBare || [], needUpper, bankKey, "upper");
 
-      // Enriquecer (blandas top + duras evaluadas + duras sugeridas + APR)
       const lowerFull = enrichJobs(lowerBare, bankKey);
       const upperFull = enrichJobs(upperBare, bankKey);
 
       setLowerJobs(lowerFull);
       setUpperJobs(upperFull);
     } catch (e: any) {
-      // Si todo falla, generar totalmente local
       const careerKey = (userData?.career || "").toLowerCase().trim();
       const bankKey = ["administracion", "marketing", "ventas", "sistemas"].includes(careerKey) ? careerKey : "administracion";
       const bankLocal = {
@@ -387,9 +388,8 @@ Evaluación Cognitiva`
     }
   }
 
-  // Autogenerar al montar (sin botón)
   useEffect(() => {
-    generateJobs(); // no requiere API key; el endpoint simula si no hay
+    generateJobs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -447,7 +447,7 @@ Evaluación Cognitiva`
           </CardContent>
         </Card>
 
-        {/* ======= PUESTOS (debajo de Resumen General) ======= */}
+        {/* PUESTOS */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader className="flex flex-col gap-2">
             <CardTitle className="flex items-center gap-2">💼 Puestos Según Competencias Adquiridas</CardTitle>
@@ -455,9 +455,7 @@ Evaluación Cognitiva`
           </CardHeader>
           <CardContent className="space-y-4">
             {jobsError && <p className="text-sm text-red-600">Nota: {jobsError}</p>}
-            {/* 5 de mandos medios hacia abajo */}
             <SuggestedJobsAccordion title="Mandos medios hacia abajo (5)" items={lowerJobs} />
-            {/* 3 de mandos medios hacia arriba */}
             <SuggestedJobsAccordion title="Mandos medios hacia arriba (3)" items={upperJobs} />
           </CardContent>
         </Card>
@@ -494,51 +492,50 @@ Evaluación Cognitiva`
           <Card className="print:hidden">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">🚀 Acciones</CardTitle>
+              <CardDescription>Exporta, comparte o genera nueva evaluación</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Button onClick={handlePrint} className="flex items-center gap-2">
                   <Download className="w-4 h-4" />
-                  Imprimir o Descargar PDF
+                  Imprimir / PDF
                 </Button>
-                <Button onClick={handleEmail} variant="outline" className="flex items-center gap-2">
+
+                <Button onClick={handleShareWithStudent} variant="outline" className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  Enviar por Correo
-                </Button>
-                <Button onClick={() => setShowVideoTask(true)} variant="secondary" className="flex items-center gap-2">
-                  <Video className="w-4 h-4" />
-                  Tarea de Validación por Video
-                </Button>
-                {/* Nuevos botones agregados */}
-                <Button
-                  onClick={handleShareWithStudent}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
                   Enviar a Alumno (link)
                 </Button>
+
                 <Button
                   onClick={() => copyToClipboard(encodeStateToLink())}
                   variant="secondary"
                   className="flex items-center gap-2"
                 >
+                  <LinkIcon className="w-4 h-4" />
                   Copiar enlace del Reporte
                 </Button>
-              </div>
-              <div className="mt-6 pt-6 border-t">
+
+                {/* MOVIDO: “Realizar Nueva Evaluación” junto al copiar enlace */}
                 <Button
                   onClick={() => {
                     try {
-                      // intenta ir a la home del app router
                       window.location.href = "/";
                     } catch {
                       onRestart();
                     }
                   }}
                   variant="outline"
-                  className="w-full"
+                  className="flex items-center gap-2"
                 >
+                  <RefreshCcw className="w-4 h-4" />
                   Realizar Nueva Evaluación
+                </Button>
+              </div>
+
+              <div className="mt-6 pt-6 border-t">
+                <Button onClick={() => setShowVideoTask(true)} variant="secondary" className="flex items-center gap-2">
+                  <Video className="w-4 h-4" />
+                  Tarea de Validación por Video
                 </Button>
               </div>
             </CardContent>
