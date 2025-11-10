@@ -1,37 +1,38 @@
-import { NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { existingJobs = [], grades = [] } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const messages = body?.messages ?? [{ role: "user", content: "ping" }];
 
-    // Top 3 blandas
-    const sorted = grades.sort((a: any, b: any) => b.score - a.score).slice(0, 3);
-    const topBlandas = sorted.map((g: any) => g.competency);
-
-    const hardSkills = ["Análisis de datos", "Gestión financiera", "Programación", "Planificación estratégica", "Diseño UX/UI", "Liderazgo técnico", "Negociación", "Contabilidad avanzada"];
-
-    function randomPick(arr: string[], n: number) {
-      return arr.sort(() => 0.5 - Math.random()).slice(0, n);
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({
+        choices: [{ message: { role: "assistant", content: "🧪 [SIMULADO] Perfiles generados localmente." } }]
+      });
     }
 
-    const generateProfile = (job: string) => ({
-      job,
-      description: `Rol clave para aplicar las competencias evaluadas y fortalecer la ejecución estratégica dentro del área de ${job}.`,
-      criterios: {
-        atinencia: "El rol está directamente vinculado con el desempeño observable en la dinámica del puesto.",
-        pertinencia: "Su ejecución es crucial y tiene impacto directo en los resultados de la organización.",
-        recurrencia: "Representa un patrón constante de comportamiento dentro del proceso laboral.",
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
-      blandasDominantes: topBlandas,
-      durasEvaluadas: randomPick(hardSkills, 3),
-      durasSugeridas: randomPick(hardSkills.filter(s => !topBlandas.includes(s)), 3),
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages,
+        temperature: 0.2,
+      }),
     });
 
-    const lower = existingJobs.slice(0, 5).map(generateProfile);
-    const upper = existingJobs.slice(-3).map(generateProfile);
+    if (!res.ok) {
+      const err = await res.text();
+      return NextResponse.json({ error: { status: res.status, body: err } }, { status: res.status });
+    }
 
-    return NextResponse.json({ success: true, lower, upper });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    const data = await res.json();
+    return NextResponse.json(data);
+  } catch (e:any) {
+    return NextResponse.json({ error: e?.message ?? "Unexpected error" }, { status: 500 });
   }
 }
