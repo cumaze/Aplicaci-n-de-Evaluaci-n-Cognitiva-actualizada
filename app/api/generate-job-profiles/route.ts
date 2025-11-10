@@ -1,12 +1,14 @@
+// app/api/generate-job-profiles/route.ts
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+
+export const runtime = "nodejs";
 
 type ReqBody = {
   existingJobs?: string[];
   targetLower?: number;
   targetUpper?: number;
   career?: string;
-  forceSim?: boolean; // permitir forzar simulación desde el cliente (admin)
+  forceSim?: boolean;
 };
 
 type BareItem = { job: string; description: string };
@@ -90,8 +92,8 @@ function simulate(career: string, targetLower: number, targetUpper: number) {
   };
 }
 
-async function generateWithAI(
-  client: OpenAI,
+async function generateWithProvider(
+  apiKey: string,
   career: string,
   targetLower: number,
   targetUpper: number
@@ -109,51 +111,66 @@ Reglas:
 - EXACTAMENTE ${targetLower} puestos en "lower" (mandos medios hacia abajo).
 - EXACTAMENTE ${targetUpper} puestos en "upper" (mandos medios hacia arriba).
 - Evita duplicados. Descripciones concisas (1–2 frases) según el área "${career || "administración"}".
-- Si hay duda, usa títulos razonables del área. 
+- Si hay duda, usa títulos razonables del área.
 - Ejemplo de descripción base: "${bank.desc}"
 `;
 
-  const res = await client.responses.create({
-    model: "gpt-4o-mini",
-    input: prompt,
-    temperature: 0.4,
+  // Detecta proveedor
+  const useOpenRouter = !!process.env.OPENROUTER_API_KEY;
+  const endpoint = useOpenRouter
+    ? "https://openrouter.ai/api/v1/chat/completions"
+    : "https://api.deepseek.com/v1/chat/completions";
+  const model = useOpenRouter ? "deepseek/deepseek-chat" : "deepseek-chat";
+
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  };
+  if (useOpenRouter) {
+    headers["HTTP-Referer"] = "https://aplicaci-n-de-evaluaci-n-cognitiva.vercel.app";
+    headers["X-Title"] = "Evaluación Cognitiva";
+  }
+
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.4,
+    }),
   });
 
-  const text =
-    (res as any)?.output?.[0]?.content?.[0]?.text ??
-    (res as any)?.choices?.[0]?.message?.content ??
+  if (!res.ok) throw new Error(`${useOpenRouter ? "OpenRouter" : "DeepSeek"} HTTP ${res.status}`);
+
+  const data = await res.json();
+  const text: string =
+    data?.choices?.[0]?.message?.content ??
+    data?.output?.[0]?.content?.[0]?.text ??
     "";
 
   let parsed: { lower: BareItem[]; upper: BareItem[] } | null = null;
   try {
     parsed = JSON.parse(text);
   } catch {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (match) {
-      parsed = JSON.parse(match[0]);
-    }
+    const match = typeof text === "string" ? text.match(/\{[\s\S]*\}/) : null;
+    if (match) parsed = JSON.parse(match[0]);
   }
-
   if (!parsed) throw new Error("AI returned non-JSON");
 
-  const normalize = (arr: BareItem[], needed: number): BareItem[] => {
+  const normalize = (arr: BareItem[], needed: number, kind: "lower" | "upper"): BareItem[] => {
     const safe = (arr || []).filter(Boolean).slice(0, needed);
     if (safe.length < needed) {
-      const fill = simulate(career, needed, needed).lower.slice(0, needed - safe.length);
-      return [...safe, ...fill];
+      const fillBank = simulate(career, needed, needed)[kind].slice(0, needed - safe.length);
+      return [...safe, ...fillBank];
     }
     return safe;
   };
 
-  const lower = normalize(parsed.lower || [], targetLower);
-  const upper = normalize(parsed.upper || [], targetUpper);
+  const lower = normalize(parsed.lower || [], targetLower, "lower");
+  const upper = normalize(parsed.upper || [], targetUpper, "upper");
 
-  return {
-    success: true,
-    mode: "real",
-    lower,
-    upper,
-  };
+  return { success: true, mode: "real", lower, upper };
 }
 
 export async function POST(req: Request) {
@@ -164,20 +181,19 @@ export async function POST(req: Request) {
     const career = (body.career || "").toLowerCase().trim();
     const forceSim = !!body.forceSim;
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY ?? process.env.DEEPSEEK_API_KEY;
 
     if (forceSim || !apiKey) {
       return NextResponse.json(simulate(career, targetLower, targetUpper));
     }
 
     try {
-      const client = new OpenAI({ apiKey });
-      const real = await generateWithAI(client, career, targetLower, targetUpper);
+      const real = await generateWithProvider(apiKey, career, targetLower, targetUpper);
       return NextResponse.json(real);
     } catch (err: any) {
       const sim = simulate(career, targetLower, targetUpper);
-      sim.mode = "simulated_due_to_error";
-      sim.reason = err?.message || "ai_error";
+      (sim as any).mode = "simulated_due_to_error";
+      (sim as any).reason = err?.message || "ai_error";
       return NextResponse.json(sim);
     }
   } catch (e: any) {
