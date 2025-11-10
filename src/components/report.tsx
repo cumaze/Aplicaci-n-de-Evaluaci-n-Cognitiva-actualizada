@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import SuggestedJobsAccordion from "./SuggestedJobsAccordion";
 import type { UserData, CompetencyGrade } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,9 @@ interface ReportProps {
 
 export default function Report({ userData, summary, grades, onRestart }: ReportProps) {
   const [showVideoTask, setShowVideoTask] = useState(false);
+const [loadingJobs, setLoadingJobs] = useState(false);
+const [jobProfiles, setJobProfiles] = useState<Array<{job:string;description:string;competencies:string[]}>>([]);
+const [jobsError, setJobsError] = useState<string | null>(null);
 
   const handlePrint = () => {
     const fileName = `Informe_Evaluacion_${userData.name}_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -39,45 +43,69 @@ export default function Report({ userData, summary, grades, onRestart }: ReportP
     const body = encodeURIComponent(
       `¡Hola ${userData.name}!
 
-INSTRUCCIONES PARA GUARDAR TU REPORTE:
+{/* Puestos de Trabajo Recomendados (dinámicos con IA) */}
+<Card className="mb-6 print:shadow-none">
+  <CardHeader className="flex flex-row items-center justify-between gap-4">
+    <div>
+      <CardTitle className="flex items-center gap-2">
+        💼 Puestos de Trabajo Recomendados
+      </CardTitle>
+      <CardDescription>Generados según tu carrera y competencias</CardDescription>
+    </div>
 
-1. PRIMERO guarda tu reporte como PDF:
-   - Haz clic en "Imprimir o Descargar PDF" 
-   - En la impresora, selecciona "Guardar como PDF"
-   - Nómbralo: Informe_Evaluacion_${userData.name}.pdf
+    <Button
+      type="button"
+      disabled={loadingJobs}
+      onClick={async () => {
+        try {
+          setJobsError(null);
+          setLoadingJobs(true);
 
-2. LUEGO adjunta el PDF a este correo y envíalo.
+          // semillas rápidas por carrera (ajusta a tu gusto)
+          const seedsByCareer: Record<string, string[]> = {
+            administracion: ["Auxiliar Contable", "Gerente Financiero"],
+            ventas: ["Vendedor", "Gerente de Ventas"],
+            marketing: ["Ejecutivo de Marketing", "Gerente de Mercadeo"],
+            sistemas: ["Analista de Sistemas", "Líder de Proyectos TI"],
+          };
 
-📊 TUS RESULTADOS:
-- Carrera: ${userData.career}
-- Semestre: ${userData.semester}
-- Fecha: ${new Date().toLocaleDateString()}
+          const key = (userData?.career || "").toLowerCase().trim();
+          const existingJobs = seedsByCareer[key] ?? ["Auxiliar Contable", "Gerente Financiero"];
 
-¡Felicitaciones por completar tu evaluación!
+          const resp = await fetch("/api/generate-job-profiles", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ existingJobs }),
+          });
 
-Saludos,
-El equipo de Evaluación Cognitiva`
-    );
-    
-    window.open(`mailto:${userData.email || 'tu@email.com'}?subject=${subject}&body=${body}`);
-  };
+          if (!resp.ok) {
+            const errText = await resp.text();
+            throw new Error(errText || `HTTP ${resp.status}`);
+          }
 
-  const averageScore = grades.reduce((acc, grade) => acc + grade.score, 0) / grades.length;
+          const data = await resp.json();
+          setJobProfiles(data.newProfiles || []);
+        } catch (e: any) {
+          setJobsError(e?.message || "No se pudieron generar los puestos");
+        } finally {
+          setLoadingJobs(false);
+        }
+      }}
+      className="min-w-[220px]"
+    >
+      {loadingJobs ? "Generando…" : "Generar puestos sugeridos"}
+    </Button>
+  </CardHeader>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 print:bg-white">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <Card className="mb-6 print:shadow-none">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-gray-900">
-              📊 Reporte de Evaluación Cognitiva
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Resultados para {userData.name} - {userData.career}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+  <CardContent className="space-y-3">
+    {jobsError && (
+      <p className="text-sm text-red-600">Error: {jobsError}</p>
+    )}
+
+    <SuggestedJobsAccordion items={jobProfiles} />
+  </CardContent>
+</Card>
+
 
         {/* Información del Estudiante */}
         <Card className="mb-6 print:shadow-none">
