@@ -27,49 +27,6 @@ export default function Report({ userData, summary, grades, onRestart }: ReportP
     ? grades.reduce((acc, g) => acc + g.score, 0) / grades.length
     : 0;
 
-  useEffect(() => {
-    generateJobs();
-  }, []);
-
-  async function generateJobs() {
-    try {
-      setJobsError(null);
-      setLoadingJobs(true);
-
-      const seedsByCareer: Record<string, string[]> = {
-        administracion: ["Auxiliar Contable", "Gerente Financiero"],
-        ventas: ["Vendedor", "Gerente de Ventas"],
-        marketing: ["Ejecutivo de Marketing", "Gerente de Mercadeo"],
-        sistemas: ["Analista de Sistemas", "Líder de Proyectos TI"],
-      };
-      const key = (userData?.career || "").toLowerCase().trim();
-      const existingJobs = seedsByCareer[key] ?? ["Auxiliar Contable", "Gerente Financiero"];
-
-      const resp = await fetch("/api/generate-job-profiles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          existingJobs,
-          targetLower: 5,
-          targetUpper: 3,
-        }),
-      });
-
-      if (!resp.ok) {
-        const text = await resp.text();
-        throw new Error(text || `HTTP ${resp.status}`);
-      }
-
-      const data = await resp.json();
-      setLowerJobs(data.lower || []);
-      setUpperJobs(data.upper || []);
-    } catch (e: any) {
-      setJobsError(e?.message || "No se pudieron generar los puestos");
-    } finally {
-      setLoadingJobs(false);
-    }
-  }
-
   const handlePrint = () => {
     const fileName = `Informe_Evaluacion_${userData.name}_${new Date().toISOString().split("T")[0]}.pdf`;
     const originalTitle = document.title;
@@ -101,16 +58,287 @@ INSTRUCCIONES PARA GUARDAR TU REPORTE:
 - Carrera: ${userData.career}
 - Fecha: ${new Date().toLocaleDateString()}
 
-Adjunta ese PDF y envíalo.  
+¡Listo! Adjunta ese PDF y envíalo.
+
 Saludos,
-Equipo de Evaluación Cognitiva`
+Evaluación Cognitiva`
     );
-    window.location.href = `mailto:${userData.email || ""}?subject=${subject}&body=${body}`;
+    window.open(`mailto:${userData.email || ""}?subject=${subject}&body=${body}`);
   };
+
+  // ---------- utilidades de selección ----------
+  function topSoftCompetencies(count = 3): string[] {
+    const sorted = [...grades].sort((a, b) => b.score - a.score);
+    const names = sorted.map((g) => g.competency);
+    return Array.from(new Set(names)).slice(0, count);
+  }
+
+  // Duras evaluadas por IA (placeholder en simulado) según área
+  function hardEvaluatedPool(careerKey: string): string[] {
+    switch (careerKey) {
+      case "sistemas":
+        return ["SQL básico", "Git & Versionado", "Testing/QA"];
+      case "marketing":
+        return ["Google Analytics/GA4", "SEO On-Page", "Gestión de Ads"];
+      case "ventas":
+        return ["CRM (p. ej., HubSpot)", "Prospección B2B", "Negociación Comercial"];
+      default: // administración u otro
+        return ["Excel Avanzado", "Contabilidad Básica", "Análisis de Datos"];
+    }
+  }
+
+  // Duras sugeridas extra (no evaluadas)
+  function hardSuggestedPool(careerKey: string): string[] {
+    switch (careerKey) {
+      case "sistemas":
+        return ["Docker/CI-CD", "TypeScript", "Cloud Basics (AWS/GCP)"];
+      case "marketing":
+        return ["Copywriting", "Email Automation", "Attribution Modeling"];
+      case "ventas":
+        return ["SPIN Selling", "Gestión de Pipeline", "Análisis de Competencia"];
+      default:
+        return ["Power BI/Looker", "Costeo & Presupuestos", "ERP Básico"];
+    }
+  }
+
+  function distinctWithout(list: string[], exclude: Set<string>, want: number): string[] {
+    const out: string[] = [];
+    for (const x of list) {
+      if (!exclude.has(x)) {
+        out.push(x);
+        if (out.length === want) break;
+      }
+    }
+    return out;
+  }
+
+  // Construir items completos a partir de títulos base (lower/upper) + enriquecimiento local
+  function enrichJobs(
+    bare: { job: string; description: string }[],
+    careerKey: string
+  ): SuggestedJob[] {
+    const softTop = topSoftCompetencies(3);
+    const softSet = new Set(softTop);
+
+    const hardEval = distinctWithout(hardEvaluatedPool(careerKey), softSet, 3);
+    const hardAllExclude = new Set([...softTop, ...hardEval]);
+    const hardSug = distinctWithout(hardSuggestedPool(careerKey), hardAllExclude, 3);
+
+    // Notas APR fijas (criterios)
+    const aprNotes = {
+      atinencia:
+        "El rol está significativamente relacionado con el puesto y su quehacer diario; es observable en la dinámica de trabajo.",
+      pertinencia:
+        "Su ejecución es importante y tiene impacto en los resultados; es imprescindible para la gestión del puesto.",
+      recurrencia:
+        "El comportamiento asociado al rol es recurrente y generalizable a procesos y titulares similares.",
+    };
+
+    return bare.map((b) => ({
+      job: b.job,
+      description: b.description,
+      softCompetencies: softTop,
+      hardCompetenciesEvaluated: hardEval,
+      hardCompetenciesSuggested: hardSug,
+      aprNotes,
+      match: undefined, // opcional
+    }));
+  }
+
+  async function generateJobs() {
+    try {
+      setJobsError(null);
+      setLoadingJobs(true);
+
+      const key = (userData?.career || "").toLowerCase().trim();
+      const resp = await fetch("/api/generate-job-profiles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          existingJobs: [], // no necesario, el backend usa bancos por carrera
+          targetLower: 5,
+          targetUpper: 3,
+          career: key,
+        }),
+      });
+
+      let lowerBare: { job: string; description: string }[] = [];
+      let upperBare: { job: string; description: string }[] = [];
+
+      if (resp.ok) {
+        const data = await resp.json();
+        lowerBare = Array.isArray(data?.lower) ? data.lower : [];
+        upperBare = Array.isArray(data?.upper) ? data.upper : [];
+      }
+
+      // Fallback local si el endpoint no devuelve lo esperado
+      const needLower = 5;
+      const needUpper = 3;
+
+      // Si vienen vacíos o incompletos, generamos títulos genéricos locales
+      const fallbackBanks: Record<string, { lower: string[]; upper: string[]; desc: string }> = {
+        administracion: {
+          lower: [
+            "Asistente Administrativo",
+            "Auxiliar Contable",
+            "Analista Junior de Datos",
+            "Coordinador Operativo",
+            "Gestor de Cobros",
+            "Asistente de Compras",
+          ],
+          upper: ["Jefe de Administración", "Gerente Financiero", "Líder de Operaciones", "Controller"],
+          desc:
+            "Rol enfocado en eficiencia operativa, control de información y soporte a la toma de decisiones.",
+        },
+        marketing: {
+          lower: [
+            "Ejecutivo de Marketing Junior",
+            "Asistente de Contenidos",
+            "Analista Junior de Mercado",
+            "Community Manager",
+            "Coordinador de Activaciones",
+            "Analista SEO Junior",
+          ],
+          upper: ["Líder de Marca", "Gerente de Mercadeo", "Head of Growth", "Director Comercial"],
+          desc:
+            "Rol orientado a posicionamiento, campañas y medición de impacto para crecimiento del negocio.",
+        },
+        ventas: {
+          lower: [
+            "Ejecutivo de Ventas Junior",
+            "Representante Comercial",
+            "Asesor de Cuentas",
+            "Coordinador de Ventas",
+            "Inside Sales",
+            "Preventa",
+          ],
+          upper: ["Gerente de Ventas", "KAM Senior", "Head of Sales", "Director de Cuentas"],
+          desc:
+            "Rol centrado en prospección, relación con clientes y cumplimiento de objetivos comerciales.",
+        },
+        sistemas: {
+          lower: [
+            "Soporte TI",
+            "QA Junior",
+            "Desarrollador Junior",
+            "Analista de Datos Junior",
+            "Coordinador de Soporte",
+            "Implementador",
+          ],
+          upper: ["Líder de Proyectos TI", "Arquitecto de Soluciones", "Dev Lead", "CTO (PME)"],
+          desc:
+            "Rol orientado a desarrollo, soporte, automatización y mejora continua de soluciones tecnológicas.",
+        },
+      };
+
+      function fillBare(arr: { job: string; description: string }[], needed: number, bankKey: string, kind: "lower" | "upper") {
+        const bank = fallbackBanks[bankKey] ?? fallbackBanks["administracion"];
+        const pool = bank[kind];
+        const desc = bank.desc;
+        const copy = [...arr];
+        let i = 0;
+        while (copy.length < needed && i < pool.length) {
+          const title = pool[i++];
+          if (!copy.find((x) => x.job === title)) {
+            copy.push({ job: title, description: desc });
+          }
+        }
+        // si aún falta, rellena con genéricos
+        while (copy.length < needed) {
+          copy.push({
+            job: kind === "lower" ? `Puesto Operativo ${copy.length + 1}` : `Puesto Ejecutivo ${copy.length + 1}`,
+            description: desc,
+          });
+        }
+        return copy.slice(0, needed);
+      }
+
+      const bankKey = ["administracion", "marketing", "ventas", "sistemas"].includes(key) ? key : "administracion";
+      if (!lowerBare || lowerBare.length < needLower) lowerBare = fillBare(lowerBare || [], needLower, bankKey, "lower");
+      if (!upperBare || upperBare.length < needUpper) upperBare = fillBare(upperBare || [], needUpper, bankKey, "upper");
+
+      // Enriquecer (blandas top + duras evaluadas + duras sugeridas + APR)
+      const lowerFull = enrichJobs(lowerBare, bankKey);
+      const upperFull = enrichJobs(upperBare, bankKey);
+
+      setLowerJobs(lowerFull);
+      setUpperJobs(upperFull);
+    } catch (e: any) {
+      // Si todo falla, generar totalmente local
+      const careerKey = (userData?.career || "").toLowerCase().trim();
+      const bankKey = ["administracion", "marketing", "ventas", "sistemas"].includes(careerKey) ? careerKey : "administracion";
+      const bankLocal = {
+        administracion: {
+          lower: [
+            "Asistente Administrativo",
+            "Auxiliar Contable",
+            "Analista Junior de Datos",
+            "Coordinador Operativo",
+            "Gestor de Cobros",
+          ],
+          upper: ["Jefe de Administración", "Gerente Financiero", "Líder de Operaciones"],
+          desc:
+            "Rol enfocado en eficiencia operativa, control de información y soporte a la toma de decisiones.",
+        },
+        marketing: {
+          lower: [
+            "Ejecutivo de Marketing Junior",
+            "Asistente de Contenidos",
+            "Analista Junior de Mercado",
+            "Community Manager",
+            "Coordinador de Activaciones",
+          ],
+          upper: ["Líder de Marca", "Gerente de Mercadeo", "Head of Growth"],
+          desc:
+            "Rol orientado a posicionamiento, campañas y medición de impacto para crecimiento del negocio.",
+        },
+        ventas: {
+          lower: [
+            "Ejecutivo de Ventas Junior",
+            "Representante Comercial",
+            "Asesor de Cuentas",
+            "Coordinador de Ventas",
+            "Inside Sales",
+          ],
+          upper: ["Gerente de Ventas", "KAM Senior", "Head of Sales"],
+          desc:
+            "Rol centrado en prospección, relación con clientes y cumplimiento de objetivos comerciales.",
+        },
+        sistemas: {
+          lower: [
+            "Soporte TI",
+            "QA Junior",
+            "Desarrollador Junior",
+            "Analista de Datos Junior",
+            "Coordinador de Soporte",
+          ],
+          upper: ["Líder de Proyectos TI", "Arquitecto de Soluciones", "Dev Lead"],
+          desc:
+            "Rol orientado a desarrollo, soporte, automatización y mejora continua de soluciones tecnológicas.",
+        },
+      } as const;
+
+      const base = (bankLocal as any)[bankKey];
+      const mk = (titles: string[]) => titles.map((t) => ({ job: t, description: base.desc }));
+
+      setLowerJobs(enrichJobs(mk(base.lower), bankKey));
+      setUpperJobs(enrichJobs(mk(base.upper), bankKey));
+      setJobsError(e?.message || "Modo simulado local");
+    } finally {
+      setLoadingJobs(false);
+    }
+  }
+
+  // Autogenerar al montar (sin botón)
+  useEffect(() => {
+    generateJobs(); // no requiere API key; el endpoint simula si no hay
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 print:bg-white">
       <div className="max-w-4xl mx-auto">
+
         {/* Encabezado */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader className="text-center">
@@ -118,7 +346,7 @@ Equipo de Evaluación Cognitiva`
               📊 Reporte de Evaluación Cognitiva
             </CardTitle>
             <CardDescription className="text-lg">
-              Resultados para {userData.name} - {userData.career}
+              Resultados para {userData.name} — {userData.career}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -161,21 +389,18 @@ Equipo de Evaluación Cognitiva`
           </CardContent>
         </Card>
 
-        {/* Puestos Según Competencias Adquiridas */}
+        {/* ======= PUESTOS (debajo de Resumen General) ======= */}
         <Card className="mb-6 print:shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              💼 Puestos Según Competencias Adquiridas
-            </CardTitle>
-            <CardDescription>
-              Generados según tu carrera y las competencias desarrolladas
-            </CardDescription>
+          <CardHeader className="flex flex-col gap-2">
+            <CardTitle className="flex items-center gap-2">💼 Puestos Según Competencias Adquiridas</CardTitle>
+            <CardDescription>Generados a partir de tu carrera y las competencias evaluadas</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {jobsError && <p className="text-sm text-red-600">Error: {jobsError}</p>}
-
-            <SuggestedJobsAccordion title="Mandos Medios hacia Abajo (5)" items={lowerJobs} />
-            <SuggestedJobsAccordion title="Mandos Medios hacia Arriba (3)" items={upperJobs} />
+            {jobsError && <p className="text-sm text-red-600">Nota: {jobsError}</p>}
+            {/* 5 de mandos medios hacia abajo */}
+            <SuggestedJobsAccordion title="Mandos medios hacia abajo (5)" items={lowerJobs} />
+            {/* 3 de mandos medios hacia arriba */}
+            <SuggestedJobsAccordion title="Mandos medios hacia arriba (3)" items={upperJobs} />
           </CardContent>
         </Card>
 
@@ -230,9 +455,12 @@ Equipo de Evaluación Cognitiva`
               <div className="mt-6 pt-6 border-t">
                 <Button
                   onClick={() => {
-                    setShowVideoTask(false);
-                    window.location.href = "/";
-                    onRestart();
+                    try {
+                      // intenta ir a la home del app router
+                      window.location.href = "/";
+                    } catch {
+                      onRestart();
+                    }
                   }}
                   variant="outline"
                   className="w-full"
