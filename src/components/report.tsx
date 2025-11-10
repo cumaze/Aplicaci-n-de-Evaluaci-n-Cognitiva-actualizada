@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { UserData, CompetencyGrade } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ interface ReportProps {
 
 export default function Report({ userData, summary, grades, onRestart }: ReportProps) {
   const [showVideoTask, setShowVideoTask] = useState(false);
-  const [loadingJobs, setLoadingJobs] = useState(false);
+  const [loadingJobs, setLoadingJobs] = useState(true);
   const [jobsError, setJobsError] = useState<string | null>(null);
   const [lowerJobs, setLowerJobs] = useState<SuggestedJob[]>([]);
   const [upperJobs, setUpperJobs] = useState<SuggestedJob[]>([]);
@@ -67,51 +67,56 @@ Evaluación Cognitiva`
     window.open(`mailto:${userData.email || ""}?subject=${subject}&body=${body}`);
   };
 
-  async function generateJobs() {
-    try {
-      setJobsError(null);
-      setLoadingJobs(true);
+  // Generación automática al cargar
+  useEffect(() => {
+    async function generateJobs() {
+      try {
+        setJobsError(null);
+        setLoadingJobs(true);
 
-      // Semillas mínimas por carrera (ajústalo a tu gusto)
-      const seedsByCareer: Record<string, string[]> = {
-        administracion: ["Auxiliar Contable", "Gerente Financiero"],
-        ventas: ["Vendedor", "Gerente de Ventas"],
-        marketing: ["Ejecutivo de Marketing", "Gerente de Mercadeo"],
-        sistemas: ["Analista de Sistemas", "Líder de Proyectos TI"],
-      };
-      const key = (userData?.career || "").toLowerCase().trim();
-      const existingJobs = seedsByCareer[key] ?? ["Auxiliar Contable", "Gerente Financiero"];
+        const seedsByCareer: Record<string, string[]> = {
+          administracion: ["Auxiliar Contable", "Gerente Financiero"],
+          ventas: ["Vendedor", "Gerente de Ventas"],
+          marketing: ["Ejecutivo de Marketing", "Gerente de Mercadeo"],
+          sistemas: ["Analista de Sistemas", "Líder de Proyectos TI"],
+        };
 
-      const resp = await fetch("/api/generate-job-profiles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          existingJobs,
-          targetLower: 5,
-          targetUpper: 3,
-        }),
-      });
+        const key = (userData?.career || "").toLowerCase().trim();
+        const existingJobs = seedsByCareer[key] ?? ["Auxiliar Contable", "Gerente Financiero"];
 
-      if (!resp.ok) {
-        const text = await resp.text();
-        throw new Error(text || `HTTP ${resp.status}`);
+        const resp = await fetch("/api/generate-job-profiles", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            existingJobs,
+            targetLower: 5,
+            targetUpper: 3,
+          }),
+        });
+
+        if (!resp.ok) {
+          const text = await resp.text();
+          throw new Error(text || `HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        setLowerJobs((data.lower || []).slice(0, 5));
+        setUpperJobs((data.upper || []).slice(0, 3));
+      } catch (e: any) {
+        setJobsError(e?.message || "No se pudieron generar los puestos");
+      } finally {
+        setLoadingJobs(false);
       }
-
-      const data = await resp.json();
-      setLowerJobs(data.lower || []);
-      setUpperJobs(data.upper || []);
-    } catch (e: any) {
-      setJobsError(e?.message || "No se pudieron generar los puestos");
-    } finally {
-      setLoadingJobs(false);
     }
-  }
+
+    generateJobs();
+  }, [userData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 print:bg-white">
       <div className="max-w-4xl mx-auto">
 
-        {/* Encabezado */}
+        {/* ENCABEZADO */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold text-gray-900">
@@ -123,7 +128,7 @@ Evaluación Cognitiva`
           </CardHeader>
         </Card>
 
-        {/* Información del Estudiante */}
+        {/* INFORMACIÓN DEL ESTUDIANTE */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">👤 Información del Estudiante</CardTitle>
@@ -146,7 +151,7 @@ Evaluación Cognitiva`
           </CardContent>
         </Card>
 
-        {/* Resumen General */}
+        {/* RESUMEN GENERAL */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">📝 Resumen General</CardTitle>
@@ -165,38 +170,39 @@ Evaluación Cognitiva`
           </CardContent>
         </Card>
 
-        {/* ======= PUESTOS DE TRABAJO (debajo de Resumen General) ======= */}
+        {/* PUESTOS SEGÚN COMPETENCIAS ADQUIRIDAS */}
         <Card className="mb-6 print:shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">💼 Puestos de trabajo recomendados</CardTitle>
-              <CardDescription>Generados según tu carrera y competencias</CardDescription>
-            </div>
-            <Button type="button" onClick={generateJobs} disabled={loadingJobs} className="min-w-[220px]">
-              {loadingJobs ? "Generando…" : "Generar puestos sugeridos"}
-            </Button>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              💼 Puestos Según Competencias Adquiridas
+            </CardTitle>
+            <CardDescription>Generados automáticamente según tu carrera y resultados</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {loadingJobs && <p className="text-gray-500 italic">Generando puestos...</p>}
             {jobsError && <p className="text-sm text-red-600">Error: {jobsError}</p>}
 
-            {/* 5 de mandos medios hacia abajo */}
-            <SuggestedJobsAccordion
-              title="Mandos medios hacia abajo (5)"
-              items={lowerJobs}
-            />
-
-            {/* 3 de mandos medios hacia arriba */}
-            <SuggestedJobsAccordion
-              title="Mandos medios hacia arriba (3)"
-              items={upperJobs}
-            />
+            {!loadingJobs && (
+              <>
+                <SuggestedJobsAccordion
+                  title="Mandos medios hacia abajo (5)"
+                  items={lowerJobs}
+                  showHardSkills
+                />
+                <SuggestedJobsAccordion
+                  title="Mandos medios hacia arriba (3)"
+                  items={upperJobs}
+                  showHardSkills
+                />
+              </>
+            )}
           </CardContent>
         </Card>
 
-        {/* Competencias blandas evaluadas */}
+        {/* COMPETENCIAS BLANDAS EVALUADAS */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">🎯 Competencias blandas evaluadas</CardTitle>
+            <CardTitle className="flex items-center gap-2">🎯 Competencias Blandas Evaluadas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -220,7 +226,7 @@ Evaluación Cognitiva`
           </CardContent>
         </Card>
 
-        {/* Acciones */}
+        {/* ACCIONES */}
         {!showVideoTask ? (
           <Card className="print:hidden">
             <CardHeader>
