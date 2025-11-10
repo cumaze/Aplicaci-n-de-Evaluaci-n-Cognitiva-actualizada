@@ -6,9 +6,7 @@ export async function POST(req: Request) {
   try {
     const { career, level } = (await req.json()) as { career: string; level: string };
 
-    // ENCONTRAR LA CARRERA SELECCIONADA
     const selectedCareer = CAREERS.find(c => c.key === career);
-    
     if (!selectedCareer) {
       return NextResponse.json(
         { success: false, error: 'Carrera no encontrada' },
@@ -16,11 +14,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // GENERAR PREGUNTAS PARA LAS 10 COMPETENCIAS DE LA CARRERA
     const questions: Question[] = selectedCareer.competencies.map((competency, index) => {
-      // Generar preguntas contextualizadas según la competencia
       let questionText = '';
-      
       switch (competency) {
         case 'Liderazgo':
         case 'Liderazgo Transformacional':
@@ -64,7 +59,7 @@ export async function POST(req: Request) {
         competency: competency,
         question: questionText,
         area: selectedCareer.area,
-        type: 'text' // o 'multiple_choice' si quieres agregar opciones
+        type: 'text',
       };
     });
 
