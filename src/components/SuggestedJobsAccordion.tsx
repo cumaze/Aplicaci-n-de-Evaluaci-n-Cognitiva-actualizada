@@ -6,137 +6,83 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
-type CriteriaNotes = {
-  atinencia?: string;
-  pertinencia?: string;
-  recurrencia?: string;
+type Rationale = {
+  atinencia: string;
+  pertinencia: string;
+  recurrencia: string;
 };
 
-export type SuggestedJobItem = {
+export type SuggestedJob = {
   job: string;
+  level: "lower" | "upper";
   description: string;
-  competencies: string[];
-  // Opcional: si tu endpoint ya devuelve las notas de criterios, se usan tal cual
-  criteriaNotes?: CriteriaNotes;
+  competencies: string[]; // blandas sugeridas para el puesto
+  hardSkills: string[];   // “Aconsejamos tener…”
+  rationale: Rationale;
+  match: number; // 0–100
 };
 
 export default function SuggestedJobsAccordion({
+  title,
   items,
 }: {
-  items: SuggestedJobItem[];
+  title: string;
+  items: SuggestedJob[];
 }) {
-  if (!items || items.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        No hay puestos sugeridos aún. Haz clic en <b>“Generar puestos
-        sugeridos”</b>.
-      </p>
-    );
-  }
+  if (!items?.length) return null;
 
   return (
-    <Accordion type="single" collapsible className="w-full">
-      {items.map((it, idx) => {
-        const notes = withFallbackNotes(it);
-
-        return (
-          <AccordionItem key={`${it.job}-${idx}`} value={`${it.job}-${idx}`}>
-            <AccordionTrigger>
-              <div className="flex flex-col text-left">
-                <span className="font-semibold">{it.job}</span>
-                <span className="text-xs text-muted-foreground">
-                  {it.competencies?.slice(0, 3).join(" • ")}
-                  {it.competencies && it.competencies.length > 3 ? " • …" : ""}
+    <div className="space-y-2">
+      <h4 className="font-semibold text-lg">{title}</h4>
+      <Accordion type="single" collapsible className="w-full">
+        {items.map((it, idx) => (
+          <AccordionItem key={`${it.job}-${idx}`} value={`item-${idx}`}>
+            <AccordionTrigger className="justify-between">
+              <span className="text-left">
+                {it.job}
+                <span className="ml-2 text-xs text-muted-foreground">
+                  ({it.level === "lower" ? "Mandos medios hacia abajo" : "Mandos medios hacia arriba"})
                 </span>
-              </div>
+              </span>
+              <Badge className="ml-3">{it.match}% Match</Badge>
             </AccordionTrigger>
-
             <AccordionContent>
-              {/* Descripción del puesto */}
-              <section className="space-y-2 mb-4">
-                <h4 className="text-sm font-semibold">Descripción</h4>
-                <p className="text-sm leading-relaxed">{it.description}</p>
-              </section>
+              <div className="space-y-3">
+                <p className="text-sm text-foreground">{it.description}</p>
 
-              {/* Competencias clave */}
-              <section className="space-y-2 mb-4">
-                <h4 className="text-sm font-semibold">Competencias clave</h4>
-                {it.competencies && it.competencies.length > 0 ? (
-                  <ul className="list-disc list-inside text-sm space-y-1">
+                <div className="bg-white rounded p-3 border">
+                  <h5 className="font-medium mb-1">🎯 Criterios conductuales</h5>
+                  <ul className="text-sm list-disc list-inside space-y-1 text-muted-foreground">
+                    <li><strong>Atinencia:</strong> {it.rationale.atinencia}</li>
+                    <li><strong>Pertinencia:</strong> {it.rationale.pertinencia}</li>
+                    <li><strong>Recurrencia:</strong> {it.rationale.recurrencia}</li>
+                  </ul>
+                </div>
+
+                <div className="bg-blue-50 rounded p-3 border border-blue-100">
+                  <h5 className="font-medium mb-1">🧠 Competencias blandas clave</h5>
+                  <div className="flex flex-wrap gap-2">
                     {it.competencies.map((c) => (
-                      <li key={c}>{c}</li>
+                      <Badge key={c} variant="secondary">{c}</Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 rounded p-3 border border-amber-200">
+                  <h5 className="font-medium mb-1">🛠️ Aconsejamos tener para este puesto</h5>
+                  <ul className="list-disc list-inside text-sm">
+                    {it.hardSkills.map((h) => (
+                      <li key={h}>{h}</li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Sin competencias especificadas.
-                  </p>
-                )}
-              </section>
-
-              {/* Criterios conductuales (Atinencia, Pertinencia, Recurrencia) */}
-              <section className="space-y-3">
-                <h4 className="text-sm font-semibold">Criterios conductuales</h4>
-
-                <div className="rounded-md border bg-card p-3">
-                  <p className="text-sm font-medium">Criterio 1: Atinencia</p>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Verifica si el rol está significativamente relacionado con el
-                    puesto y es observable en la dinámica del trabajo.
-                  </p>
-                  <p className="text-sm leading-relaxed">{notes.atinencia}</p>
                 </div>
-
-                <div className="rounded-md border bg-card p-3">
-                  <p className="text-sm font-medium">Criterio 2: Pertinencia</p>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Evalúa la importancia del rol por su incidencia/impacto en la
-                    gestión; su ejecución debe ser imprescindible y con efecto en
-                    el desempeño.
-                  </p>
-                  <p className="text-sm leading-relaxed">{notes.pertinencia}</p>
-                </div>
-
-                <div className="rounded-md border bg-card p-3">
-                  <p className="text-sm font-medium">Criterio 3: Recurrencia</p>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Confirma que no sea un comportamiento aislado, sino un patrón
-                    repetible en distintos procesos o titulares del puesto.
-                  </p>
-                  <p className="text-sm leading-relaxed">{notes.recurrencia}</p>
-                </div>
-              </section>
+              </div>
             </AccordionContent>
           </AccordionItem>
-        );
-      })}
-    </Accordion>
+        ))}
+      </Accordion>
+    </div>
   );
-}
-
-/**
- * Si el backend no manda 'criteriaNotes', armamos notas por defecto
- * usando la descripción y las competencias del puesto.
- */
-function withFallbackNotes(it: SuggestedJobItem): Required<CriteriaNotes> {
-  const baseDesc =
-    it.description?.trim() ||
-    `El rol ${it.job} requiere desempeño sostenido en sus funciones principales.`;
-  const topCompetencies = (it.competencies || []).slice(0, 5).join(", ");
-
-  const defaultAtinencia = `El rol de “${it.job}” está directamente ligado a las funciones descritas: ${baseDesc}.
-Se observa de forma cotidiana en tareas propias del puesto y se alinea con competencias como: ${topCompetencies}.`;
-
-  const defaultPertinencia = `El rol es pertinente porque impacta la gestión y los resultados del área/organización.
-Su ejecución es necesaria para alcanzar objetivos clave y para la toma de decisiones, apoyándose en competencias como: ${topCompetencies}.`;
-
-  const defaultRecurrencia = `El rol no es esporádico: se repite a lo largo de diversos procesos y ciclos de trabajo
-(planificación, ejecución y seguimiento), y puede generalizarse a distintos titulares del puesto con competencias como: ${topCompetencies}.`;
-
-  return {
-    atinencia: it.criteriaNotes?.atinencia?.trim() || defaultAtinencia,
-    pertinencia: it.criteriaNotes?.pertinencia?.trim() || defaultPertinencia,
-    recurrencia: it.criteriaNotes?.recurrencia?.trim() || defaultRecurrencia,
-  };
 }
