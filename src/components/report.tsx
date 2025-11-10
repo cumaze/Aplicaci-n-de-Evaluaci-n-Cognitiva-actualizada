@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import SuggestedJobsAccordion from "./SuggestedJobsAccordion";
+import SuggestedJobsAccordion from './SuggestedJobsAccordion';
 import type { UserData, CompetencyGrade } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,11 +17,22 @@ interface ReportProps {
 }
 
 export default function Report({ userData, summary, grades, onRestart }: ReportProps) {
+  // Estados
   const [showVideoTask, setShowVideoTask] = useState(false);
-const [loadingJobs, setLoadingJobs] = useState(false);
-const [jobProfiles, setJobProfiles] = useState<Array<{job:string;description:string;competencies:string[]}>>([]);
-const [jobsError, setJobsError] = useState<string | null>(null);
 
+  // Estados para la sección dinámica de puestos
+  const [loadingJobs, setLoadingJobs] = useState(false);
+  const [jobProfiles, setJobProfiles] = useState<Array<{ job: string; description: string; competencies: string[] }>>(
+    []
+  );
+  const [jobsError, setJobsError] = useState<string | null>(null);
+
+  // Promedio
+  const averageScore = grades.length
+    ? grades.reduce((acc, g) => acc + g.score, 0) / grades.length
+    : 0;
+
+  // Acciones
   const handlePrint = () => {
     const fileName = `Informe_Evaluacion_${userData.name}_${new Date().toISOString().split('T')[0]}.pdf`;
     const originalTitle = document.title;
@@ -41,78 +52,99 @@ const [jobsError, setJobsError] = useState<string | null>(null);
   const handleEmail = () => {
     const subject = encodeURIComponent(`Reporte de Evaluación - ${userData.name}`);
     const body = encodeURIComponent(
-      `¡Hola ${userData.name}!
+`¡Hola ${userData.name}!
 
-{/* Puestos de Trabajo Recomendados (dinámicos con IA) */}
-<Card className="mb-6 print:shadow-none">
-  <CardHeader className="flex flex-row items-center justify-between gap-4">
-    <div>
-      <CardTitle className="flex items-center gap-2">
-        💼 Puestos de Trabajo Recomendados
-      </CardTitle>
-      <CardDescription>Generados según tu carrera y competencias</CardDescription>
-    </div>
+Adjunto te envío mi reporte de evaluación cognitiva.
 
-    <Button
-      type="button"
-      disabled={loadingJobs}
-      onClick={async () => {
-        try {
-          setJobsError(null);
-          setLoadingJobs(true);
+Datos:
+- Carrera: ${userData.career}
+- Semestre: ${userData.semester}
+- Fecha: ${new Date().toLocaleDateString()}
 
-          // semillas rápidas por carrera (ajusta a tu gusto)
-          const seedsByCareer: Record<string, string[]> = {
-            administracion: ["Auxiliar Contable", "Gerente Financiero"],
-            ventas: ["Vendedor", "Gerente de Ventas"],
-            marketing: ["Ejecutivo de Marketing", "Gerente de Mercadeo"],
-            sistemas: ["Analista de Sistemas", "Líder de Proyectos TI"],
-          };
+Instrucciones:
+1) En la app, usa "Imprimir o Descargar PDF" y guarda el archivo.
+2) Adjunta ese PDF y responde este correo.
 
-          const key = (userData?.career || "").toLowerCase().trim();
-          const existingJobs = seedsByCareer[key] ?? ["Auxiliar Contable", "Gerente Financiero"];
+Saludos,`
+    );
+    window.open(`mailto:${userData.email || 'tu@email.com'}?subject=${subject}&body=${body}`);
+  };
 
-          const resp = await fetch("/api/generate-job-profiles", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ existingJobs }),
-          });
+  // Click: Generar puestos sugeridos (desde el backend /api/generate-job-profiles)
+  const handleGenerateJobs = async () => {
+    try {
+      setJobsError(null);
+      setLoadingJobs(true);
 
-          if (!resp.ok) {
-            const errText = await resp.text();
-            throw new Error(errText || `HTTP ${resp.status}`);
-          }
+      // Semillas por carrera (ajústalas a tu gusto)
+      const seedsByCareer: Record<string, string[]> = {
+        administracion: ['Auxiliar Contable', 'Gerente Financiero'],
+        ventas: ['Vendedor', 'Gerente de Ventas'],
+        marketing: ['Ejecutivo de Marketing', 'Gerente de Mercadeo'],
+        sistemas: ['Analista de Sistemas', 'Líder de Proyectos TI'],
+      };
 
-          const data = await resp.json();
-          setJobProfiles(data.newProfiles || []);
-        } catch (e: any) {
-          setJobsError(e?.message || "No se pudieron generar los puestos");
-        } finally {
-          setLoadingJobs(false);
-        }
-      }}
-      className="min-w-[220px]"
-    >
-      {loadingJobs ? "Generando…" : "Generar puestos sugeridos"}
-    </Button>
-  </CardHeader>
+      const key = (userData?.career || '').toLowerCase().trim();
+      const existingJobs = seedsByCareer[key] ?? ['Auxiliar Contable', 'Gerente Financiero'];
 
-  <CardContent className="space-y-3">
-    {jobsError && (
-      <p className="text-sm text-red-600">Error: {jobsError}</p>
-    )}
+      const resp = await fetch('/api/generate-job-profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ existingJobs }),
+      });
 
-    <SuggestedJobsAccordion items={jobProfiles} />
-  </CardContent>
-</Card>
+      if (!resp.ok) {
+        const errText = await resp.text();
+        // 👇 evitar template literal (que te falló en build)
+        throw new Error(errText || ('HTTP ' + resp.status));
+      }
 
+      const data = await resp.json();
+      setJobProfiles(data.newProfiles || []);
+    } catch (e: any) {
+      setJobsError(e?.message || 'No se pudieron generar los puestos');
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 print:bg-white">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <Card className="mb-6 print:shadow-none">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold text-gray-900">📊 Reporte de Evaluación Cognitiva</CardTitle>
+            <CardDescription className="text-lg">
+              Resultados para {userData.name} - {userData.career}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        {/* Puestos de Trabajo Recomendados (dinámicos con IA) */}
+        <Card className="mb-6 print:shadow-none">
+          <CardHeader className="flex flex-row items-center justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">💼 Puestos de Trabajo Recomendados</CardTitle>
+              <CardDescription>Generados según tu carrera y competencias</CardDescription>
+            </div>
+
+            <Button type="button" disabled={loadingJobs} onClick={handleGenerateJobs} className="min-w-[220px]">
+              {loadingJobs ? 'Generando…' : 'Generar puestos sugeridos'}
+            </Button>
+          </CardHeader>
+
+          <CardContent className="space-y-3">
+            {jobsError && <p className="text-sm text-red-600">Error: {jobsError}</p>}
+
+            <SuggestedJobsAccordion items={jobProfiles} />
+          </CardContent>
+        </Card>
 
         {/* Información del Estudiante */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              👤 Información del Estudiante
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2">👤 Información del Estudiante</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -135,9 +167,7 @@ const [jobsError, setJobsError] = useState<string | null>(null);
         {/* Resumen General */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              📝 Resumen General
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2">📝 Resumen General</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-700 leading-relaxed">{summary}</p>
@@ -156,20 +186,16 @@ const [jobsError, setJobsError] = useState<string | null>(null);
         {/* Competencias */}
         <Card className="mb-6 print:shadow-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              🎯 Competencias Evaluadas
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2">🎯 Competencias Evaluadas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {grades.map((grade, index) => (
+              {grades.map((grade) => (
                 <div key={grade.competency} className="border rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-semibold text-lg">{grade.competency}</h4>
                     <div className="text-right">
-                      <Badge className="text-sm">
-                        {grade.score.toFixed(1)}/5.0
-                      </Badge>
+                      <Badge className="text-sm">{grade.score.toFixed(1)}/5.0</Badge>
                       <Badge variant="secondary" className="ml-2">
                         {grade.grade}
                       </Badge>
@@ -186,103 +212,11 @@ const [jobsError, setJobsError] = useState<string | null>(null);
           </CardContent>
         </Card>
 
-        {/* NUEVA SECCIÓN: Puestos de Trabajo Recomendados */}
-        <Card className="mb-6 print:shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              💼 Puestos de Trabajo Recomendados
-            </CardTitle>
-            <CardDescription>
-              Basado en tu perfil de competencias
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Puesto 1 */}
-              <div className="border rounded-lg p-4 bg-green-50">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-lg">Analista de Proyectos</h4>
-                  <Badge variant="default" className="bg-green-600">85% Match</Badge>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">🎯 Criterio 1: Atinencia</h5>
-                    <p className="text-sm text-gray-700">El rol está significativamente relacionado con análisis de datos y gestión de proyectos, observable en la dinámica de trabajo diaria.</p>
-                  </div>
-                  
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">📊 Criterio 2: Pertinencia</h5>
-                    <p className="text-sm text-gray-700">Es imprescindible para la toma de decisiones y tiene alto impacto en el desempeño organizacional.</p>
-                  </div>
-                  
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">🔄 Criterio 3: Recurrencia</h5>
-                    <p className="text-sm text-gray-700">Forma parte de un patrón de comportamiento constante en procesos de planificación y seguimiento.</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Puesto 2 */}
-              <div className="border rounded-lg p-4 bg-blue-50">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-lg">Coordinador de Equipos</h4>
-                  <Badge variant="default" className="bg-blue-600">78% Match</Badge>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">🎯 Criterio 1: Atinencia</h5>
-                    <p className="text-sm text-gray-700">Directamente ligado al liderazgo y coordinación de grupos de trabajo.</p>
-                  </div>
-                  
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">📊 Criterio 2: Pertinencia</h5>
-                    <p className="text-sm text-gray-700">Fundamental para la productividad y clima organizacional del equipo.</p>
-                  </div>
-                  
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">🔄 Criterio 3: Recurrencia</h5>
-                    <p className="text-sm text-gray-700">Comportamiento recurrente en la gestión diaria de personas y proyectos.</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Puesto 3 */}
-              <div className="border rounded-lg p-4 bg-purple-50">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-lg">Especialista en Innovación</h4>
-                  <Badge variant="default" className="bg-purple-600">72% Match</Badge>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">🎯 Criterio 1: Atinencia</h5>
-                    <p className="text-sm text-gray-700">Relacionado con la creatividad y mejora de procesos organizacionales.</p>
-                  </div>
-                  
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">📊 Criterio 2: Pertinencia</h5>
-                    <p className="text-sm text-gray-700">Clave para la competitividad y adaptación al cambio de la organización.</p>
-                  </div>
-                  
-                  <div className="bg-white rounded p-3">
-                    <h5 className="font-medium mb-2">🔄 Criterio 3: Recurrencia</h5>
-                    <p className="text-sm text-gray-700">Patrón constante en la identificación de oportunidades de mejora.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Acciones */}
         {!showVideoTask ? (
           <Card className="print:hidden">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                🚀 Acciones
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2">🚀 Acciones</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -290,22 +224,18 @@ const [jobsError, setJobsError] = useState<string | null>(null);
                   <Download className="w-4 h-4" />
                   Imprimir o Descargar PDF
                 </Button>
-                
+
                 <Button onClick={handleEmail} variant="outline" className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   Enviar por Correo
                 </Button>
-                
-                <Button 
-                  onClick={() => setShowVideoTask(true)} 
-                  variant="secondary" 
-                  className="flex items-center gap-2"
-                >
+
+                <Button onClick={() => setShowVideoTask(true)} variant="secondary" className="flex items-center gap-2">
                   <Video className="w-4 h-4" />
                   Tarea de Validación por Video
                 </Button>
               </div>
-              
+
               <div className="mt-6 pt-6 border-t">
                 <Button onClick={onRestart} variant="outline" className="w-full">
                   Realizar Nueva Evaluación
@@ -314,15 +244,10 @@ const [jobsError, setJobsError] = useState<string | null>(null);
             </CardContent>
           </Card>
         ) : (
-          /* Tarea de Validación por Video */
           <Card className="print:hidden">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                🎥 Tarea de Validación por Video
-              </CardTitle>
-              <CardDescription>
-                Instrucciones para la validación de competencias mediante video
-              </CardDescription>
+              <CardTitle className="flex items-center gap-2">🎥 Tarea de Validación por Video</CardTitle>
+              <CardDescription>Instrucciones para la validación de competencias mediante video</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -340,11 +265,8 @@ const [jobsError, setJobsError] = useState<string | null>(null);
                   <Download className="w-4 h-4" />
                   Descargar Instrucciones PDF
                 </Button>
-                
-                <Button 
-                  onClick={() => setShowVideoTask(false)} 
-                  variant="outline"
-                >
+
+                <Button onClick={() => setShowVideoTask(false)} variant="outline">
                   Volver al Reporte
                 </Button>
               </div>
