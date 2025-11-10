@@ -2,10 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-// 🔒 Evita prerender y cacheo: solo en cliente
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 type Payload = {
   user?: { name?: string; career?: string };
   summary?: string;
@@ -40,7 +36,6 @@ export default function ViewPage() {
     }
   }, []);
 
-  // Estado de carga inicial mientras esperamos el useEffect
   if (!checked) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
@@ -52,7 +47,6 @@ export default function ViewPage() {
     );
   }
 
-  // Si ya chequeamos y no hay payload válido -> 404 amigable
   if (!payload) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
