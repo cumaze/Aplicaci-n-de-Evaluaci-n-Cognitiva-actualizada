@@ -3,12 +3,12 @@ import type { UserData, Answers, CompetencyGrade } from '@/lib/types';
 
 export async function POST(req: Request) {
   try {
-    const { userData, answers, mode, apiKey } = await req.json();
+    const { userData, answers, mode } = await req.json();
 
-    console.log(`🔧 Modo solicitado: ${mode}, API key presente: ${!!apiKey}`);
+    console.log(`🔧 Modo solicitado: ${mode}`);
 
-    // MODO SIMULADO o fallback a simulado
-    if (mode === 'simulated' || !apiKey || apiKey === 'test-api-key-123') {
+    // MODO SIMULADO
+    if (mode === 'simulated') {
       console.log('🎮 Usando modo simulado');
       
       const summary = `Resumen de evaluación para ${userData.name} en ${userData.career}. Este es un reporte de ejemplo en modo simulado.`;
@@ -29,9 +29,9 @@ export async function POST(req: Request) {
       });
     }
 
-    // MODO REAL con API key válida
-    if (mode === 'real' && apiKey) {
-      console.log('🤖 Intentando conectar con DeepSeek...');
+    // MODO REAL con Groq
+    if (mode === 'real') {
+      console.log('🤖 Intentando conectar con Groq...');
       
       try {
         const prompt = `
@@ -44,14 +44,14 @@ export async function POST(req: Request) {
           Genera un resumen breve y evalúa cada competencia.
         `;
 
-        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
           },
           body: JSON.stringify({
-            model: 'deepseek-chat',
+            model: 'llama3-8b-8192',
             messages: [
               {
                 role: 'user',
@@ -63,15 +63,14 @@ export async function POST(req: Request) {
         });
 
         if (!response.ok) {
-          console.log(`❌ DeepSeek error: ${response.status}`);
-          // Si falla DeepSeek, usar modo simulado
-          throw new Error('API key inválida o error de DeepSeek');
+          console.log(`❌ Groq error: ${response.status}`);
+          throw new Error('Error de Groq API');
         }
 
         const data = await response.json();
         const content = data.choices[0]?.message?.content || '';
         
-        console.log('✅ DeepSeek respondió correctamente');
+        console.log('✅ Groq respondió correctamente');
         
         const summary = content || `Reporte generado por IA para ${userData.name}`;
         
@@ -90,10 +89,10 @@ export async function POST(req: Request) {
           mode: 'real'
         });
 
-      } catch (deepSeekError) {
-        console.log('🔄 Cayendo a modo simulado por error de DeepSeek');
+      } catch (groqError) {
+        console.log('🔄 Cayendo a modo simulado por error de Groq');
         // Fallback a modo simulado
-        const summary = `Evaluación para ${userData.name} (modo simulado - API no disponible)`;
+        const summary = `Evaluación para ${userData.name} (modo simulado - Groq no disponible)`;
 
         const grades: CompetencyGrade[] = Object.keys(answers).map((competency, index) => ({
           competency,
