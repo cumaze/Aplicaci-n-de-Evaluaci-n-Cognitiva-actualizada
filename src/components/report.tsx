@@ -66,6 +66,64 @@ Evaluación Cognitiva`
     window.open(`mailto:${userData.email || ""}?subject=${subject}&body=${body}`);
   };
 
+  // --- Nuevas funciones para compartir ---
+  function encodeStateToLink() {
+    // Prepara un snapshot mínimo y serializa a base64 url-safe
+    const snapshot = {
+      user: { name: userData.name, career: userData.career },
+      summary,
+      grades, // si es pesado, se puede mapear a {competency, score, grade}
+      ts: Date.now(),
+    };
+    const json = JSON.stringify(snapshot);
+    const b64 = typeof window !== "undefined" ? btoa(unescape(encodeURIComponent(json))) : "";
+    const safe = b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+
+    // Ruta pública de lectura (sin backend): /view?d=<payload>
+    const base = typeof window !== "undefined" ? window.location.origin : "";
+    return `${base}/view?d=${safe}`;
+  }
+
+  function copyToClipboard(text: string) {
+    try {
+      navigator.clipboard.writeText(text);
+      alert("Enlace copiado al portapapeles.");
+    } catch {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      alert("Enlace copiado.");
+    }
+  }
+
+  function handleShareWithStudent() {
+    const email = prompt("Correo del alumno:");
+    if (!email) return;
+
+    const link = encodeStateToLink();
+    const subject = encodeURIComponent(`Tu Reporte de Evaluación Cognitiva`);
+    const body = encodeURIComponent(
+      `Hola,
+
+Te compartimos tu reporte de evaluación. Abre este enlace para verlo:
+
+${link}
+
+Sugerencia:
+- Si deseas conservarlo como PDF, abre el enlace y usa "Imprimir -> Guardar como PDF".
+
+Saludos,
+Evaluación Cognitiva`
+    );
+
+    // Abre el cliente de correo del usuario con asunto/cuerpo
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`);
+  }
+
   // ---------- utilidades de selección ----------
   function topSoftCompetencies(count = 3): string[] {
     const sorted = [...grades].sort((a, b) => b.score - a.score);
@@ -450,6 +508,21 @@ Evaluación Cognitiva`
                 <Button onClick={() => setShowVideoTask(true)} variant="secondary" className="flex items-center gap-2">
                   <Video className="w-4 h-4" />
                   Tarea de Validación por Video
+                </Button>
+                {/* Nuevos botones agregados */}
+                <Button
+                  onClick={handleShareWithStudent}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  Enviar a Alumno (link)
+                </Button>
+                <Button
+                  onClick={() => copyToClipboard(encodeStateToLink())}
+                  variant="secondary"
+                  className="flex items-center gap-2"
+                >
+                  Copiar enlace del Reporte
                 </Button>
               </div>
               <div className="mt-6 pt-6 border-t">
