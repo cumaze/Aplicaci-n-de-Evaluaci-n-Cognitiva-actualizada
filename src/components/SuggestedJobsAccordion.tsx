@@ -1,88 +1,136 @@
 "use client";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-type Rationale = {
-  atinencia: string;
-  pertinencia: string;
-  recurrencia: string;
-};
-
-export type SuggestedJob = {
+export interface SuggestedJob {
   job: string;
-  level: "lower" | "upper";
   description: string;
-  competencies: string[]; // blandas sugeridas para el puesto
-  hardSkills: string[];   // “Aconsejamos tener…”
-  rationale: Rationale;
-  match: number; // 0–100
-};
+  competencies?: string[];
+  hardSkills?: string[];
+}
+
+interface SuggestedJobsAccordionProps {
+  title: string;
+  items: SuggestedJob[];
+  showHardSkills?: boolean;
+}
 
 export default function SuggestedJobsAccordion({
   title,
   items,
-}: {
-  title: string;
-  items: SuggestedJob[];
-}) {
-  if (!items?.length) return null;
+  showHardSkills = false,
+}: SuggestedJobsAccordionProps) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const toggle = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  if (!items || items.length === 0) {
+    return (
+      <Card className="bg-gray-50 border text-center text-gray-500 p-4">
+        <p>No hay puestos generados para esta categoría.</p>
+      </Card>
+    );
+  }
 
   return (
-    <div className="space-y-2">
-      <h4 className="font-semibold text-lg">{title}</h4>
-      <Accordion type="single" collapsible className="w-full">
-        {items.map((it, idx) => (
-          <AccordionItem key={`${it.job}-${idx}`} value={`item-${idx}`}>
-            <AccordionTrigger className="justify-between">
-              <span className="text-left">
-                {it.job}
-                <span className="ml-2 text-xs text-muted-foreground">
-                  ({it.level === "lower" ? "Mandos medios hacia abajo" : "Mandos medios hacia arriba"})
-                </span>
-              </span>
-              <Badge className="ml-3">{it.match}% Match</Badge>
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-3">
-                <p className="text-sm text-foreground">{it.description}</p>
+    <div className="space-y-4">
+      <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+      {items.map((item, index) => (
+        <Card
+          key={index}
+          className="border border-gray-200 shadow-sm transition-all duration-200"
+        >
+          <CardContent
+            className="cursor-pointer select-none"
+            onClick={() => toggle(index)}
+          >
+            <div className="flex items-center justify-between py-3">
+              <h4 className="font-semibold text-lg text-gray-900">
+                {item.job}
+              </h4>
+              {openIndex === index ? (
+                <ChevronUp className="text-gray-600 w-5 h-5" />
+              ) : (
+                <ChevronDown className="text-gray-600 w-5 h-5" />
+              )}
+            </div>
 
-                <div className="bg-white rounded p-3 border">
-                  <h5 className="font-medium mb-1">🎯 Criterios conductuales</h5>
-                  <ul className="text-sm list-disc list-inside space-y-1 text-muted-foreground">
-                    <li><strong>Atinencia:</strong> {it.rationale.atinencia}</li>
-                    <li><strong>Pertinencia:</strong> {it.rationale.pertinencia}</li>
-                    <li><strong>Recurrencia:</strong> {it.rationale.recurrencia}</li>
-                  </ul>
-                </div>
+            {openIndex === index && (
+              <div className="space-y-4 mt-3 text-gray-700">
+                {/* Descripción general */}
+                <p className="leading-relaxed">{item.description}</p>
 
-                <div className="bg-blue-50 rounded p-3 border border-blue-100">
-                  <h5 className="font-medium mb-1">🧠 Competencias blandas clave</h5>
-                  <div className="flex flex-wrap gap-2">
-                    {it.competencies.map((c) => (
-                      <Badge key={c} variant="secondary">{c}</Badge>
-                    ))}
+                {/* Competencias blandas (ya incluidas en report) */}
+                {item.competencies && item.competencies.length > 0 && (
+                  <div>
+                    <h5 className="font-semibold text-gray-800 mb-2">
+                      Competencias Clave Asociadas:
+                    </h5>
+                    <ul className="list-disc list-inside text-sm space-y-1">
+                      {item.competencies.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Competencias duras sugeridas */}
+                {showHardSkills && (
+                  <div>
+                    <h5 className="font-semibold text-gray-800 mb-2">
+                      💡 Aconsejamos tener para este puesto (Competencias Duras):
+                    </h5>
+                    <ul className="list-disc list-inside text-sm space-y-1">
+                      {(item.hardSkills && item.hardSkills.length > 0
+                        ? item.hardSkills
+                        : [
+                            "Dominio de herramientas de análisis y gestión de datos.",
+                            "Manejo de software profesional o ERP según el área.",
+                            "Capacidad de documentación técnica y control operativo.",
+                          ]
+                      ).map((skill, i) => (
+                        <li key={i}>{skill}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Criterios APR */}
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg space-y-2">
+                  <h5 className="font-semibold text-blue-900 mb-2">
+                    📘 Criterios de Selección del Puesto
+                  </h5>
+
+                  <div>
+                    <h6 className="font-medium text-gray-800">🎯 Criterio 1: Atinencia</h6>
+                    <p className="text-sm text-gray-700">
+                      El rol está significativamente relacionado con el puesto y se observa en la dinámica de trabajo diaria.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h6 className="font-medium text-gray-800">📊 Criterio 2: Pertinencia</h6>
+                    <p className="text-sm text-gray-700">
+                      El rol tiene un impacto directo en el desempeño y en los resultados de gestión del titular del puesto.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h6 className="font-medium text-gray-800">🔄 Criterio 3: Recurrencia</h6>
+                    <p className="text-sm text-gray-700">
+                      El comportamiento asociado al rol se repite de forma constante y es característico del desempeño continuo.
+                    </p>
                   </div>
                 </div>
-
-                <div className="bg-amber-50 rounded p-3 border border-amber-200">
-                  <h5 className="font-medium mb-1">🛠️ Aconsejamos tener para este puesto</h5>
-                  <ul className="list-disc list-inside text-sm">
-                    {it.hardSkills.map((h) => (
-                      <li key={h}>{h}</li>
-                    ))}
-                  </ul>
-                </div>
               </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+            )}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
